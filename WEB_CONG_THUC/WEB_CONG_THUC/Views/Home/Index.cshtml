@@ -1,8 +1,155 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Trang chủ";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>Khám phá hương vị mới mỗi ngày</h1>
+                <p>Chia sẻ, khám phá và lưu trữ các công thức nấu ăn yêu thích của bạn. Cùng nhau tạo nên cộng đồng ẩm thực đa dạng.</p>
+                <div class="hero-buttons">
+                    <a href="#" class="btn btn-primary">Khám phá công thức</a>
+                    <a href="#" class="btn btn-outline">Chia sẻ công thức của bạn</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="/images/hero-image.jpg" alt="Món ăn ngon" />
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Popular Recipes Section -->
+<section class="recipes-section">
+    <div class="container">
+        <div class="section-header">
+            <div class="badge">Khám phá</div>
+            <h2>Công thức phổ biến</h2>
+            <p>Những công thức được yêu thích nhất từ cộng đồng của chúng ta</p>
+        </div>
+
+        <div class="recipe-tabs">
+            <ul class="tabs-list">
+                <li class="active"><a href="#all">Tất cả</a></li>
+                <li><a href="#breakfast">Bữa sáng</a></li>
+                <li><a href="#lunch">Bữa trưa</a></li>
+                <li><a href="#dinner">Bữa tối</a></li>
+                <li><a href="#dessert">Tráng miệng</a></li>
+            </ul>
+
+            <div class="tab-content active" id="all">
+                <div class="recipe-grid">
+                    @for (int i = 1; i <= 8; i++)
+                    {
+                        <div class="recipe-card">
+                            <div class="recipe-image">
+                                <img src="/images/recipe-@(i).jpg" alt="Món ăn @i" />
+                                <button class="favorite-btn">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                                <div class="recipe-badge">
+                                    <span>Phổ biến</span>
+                                </div>
+                            </div>
+                            <div class="recipe-content">
+                                <h3>Món ngon số @i</h3>
+                                <p>Mô tả ngắn về công thức nấu ăn này, giới thiệu về hương vị và cách thức chế biến.</p>
+                                <div class="recipe-meta">
+                                    <div class="meta-item">
+                                        <i class="fas fa-clock"></i>
+                                        <span>30 phút</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class="fas fa-users"></i>
+                                        <span>4 người</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Other tab contents would be similar but with different data -->
+        </div>
+
+        <div class="section-footer">
+            <a href="#" class="btn btn-outline">Xem thêm công thức</a>
+        </div>
+    </div>
+</section>
+
+<!-- Blog Section -->
+<section class="blog-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Blog ẩm thực</h2>
+            <p>Khám phá các bài viết về ẩm thực, mẹo nấu ăn và văn hóa ẩm thực</p>
+        </div>
+
+        <div class="blog-grid">
+            @for (int i = 1; i <= 3; i++)
+            {
+                <div class="blog-card">
+                    <div class="blog-image">
+                        <img src="/images/blog-@(i).jpg" alt="Blog @i" />
+                    </div>
+                    <div class="blog-content">
+                        <h3>Bí quyết nấu ăn ngon mỗi ngày @i</h3>
+                        <p>Khám phá những bí quyết nấu ăn từ các đầu bếp chuyên nghiệp giúp bạn nâng cao tay nghề và tạo ra những món ăn tuyệt vời.</p>
+                        <div class="blog-meta">
+                            <div class="author">
+                                <img src="/images/author.jpg" alt="Tác giả" />
+                                <span>Tác giả</span>
+                            </div>
+                            <span class="date">3 ngày trước</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="section-footer">
+            <a href="#" class="btn btn-outline">Xem thêm bài viết</a>
+        </div>
+    </div>
+</section>
+
+<!-- Video Library Section -->
+<section class="video-section">
+    <div class="container">
+        <div class="video-content">
+            <div class="video-image">
+                <img src="/images/video-collection.jpg" alt="Bộ sưu tập video" />
+            </div>
+            <div class="video-text">
+                <div class="badge">Video</div>
+                <h2>Thư viện video nấu ăn</h2>
+                <p>Lưu trữ và xem lại các video hướng dẫn nấu ăn từ các đầu bếp chuyên nghiệp và những người yêu thích ẩm thực.</p>
+                <div class="video-buttons">
+                    <a href="#" class="btn btn-primary">
+                        <i class="fas fa-video"></i>
+                        Xem thư viện video
+                    </a>
+                    <a href="#" class="btn btn-outline">Chia sẻ video của bạn</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Community Section -->
+<section class="community-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Tham gia cộng đồng của chúng tôi</h2>
+            <p>Chia sẻ công thức, đánh giá món ăn và kết nối với những người yêu thích ẩm thực khác</p>
+        </div>
+        <div class="community-buttons">
+            <a href="#" class="btn btn-light">Đăng ký ngay</a>
+            <a href="#" class="btn btn-outline-light">Tìm hiểu thêm</a>
+        </div>
+    </div>
+</section>

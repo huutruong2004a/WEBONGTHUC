@@ -2,25 +2,39 @@
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 
-<ul class="navbar-nav">
-@if (SignInManager.IsSignedIn(User))
-{
-    <li class="nav-item">
-        <a  class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity?.Name!</a>
-    </li>
-    <li class="nav-item">
-        <form  class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-            <button  type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-        </form>
-    </li>
-}
-else
-{
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
-    </li>
-}
-</ul>
+<div class="user-nav">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <div class="user-dropdown">
+            <button class="user-dropdown-btn">
+                <img src="/images/user-avatar.jpg" alt="User Avatar" class="user-avatar" />
+                <span>@User.Identity?.Name</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="user-dropdown-content">
+                <a asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
+                    <i class="fas fa-user-cog"></i> Tài khoản
+                </a>
+                <a href="/recipes/my-recipes">
+                    <i class="fas fa-book-open"></i> Công thức của tôi
+                </a>
+                <a href="/recipes/favorites">
+                    <i class="fas fa-heart"></i> Yêu thích
+                </a>
+                <div class="dropdown-divider"></div>
+                <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                    <button type="submit" class="dropdown-logout">
+                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                    </button>
+                </form>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="auth-buttons">
+            <a class="btn btn-outline" asp-area="Identity" asp-page="/Account/Login">Đăng nhập</a>
+            <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Register">Đăng ký</a>
+        </div>
+    }
+</div>
