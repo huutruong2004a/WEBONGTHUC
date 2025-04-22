@@ -1,0 +1,18 @@
+﻿@model WEB_CONG_THUC.Models.Blog
+
+<h2>@Model.Title</h2>
+<p><i>Đăng ngày: @Model.CreatedAt.ToString("dd/MM/yyyy")</i></p>
+
+@if (!string.IsNullOrEmpty(Model.ImageUrl))
+{
+    <img src="@Model.ImageUrl" alt="Ảnh minh họa" class="img-fluid mb-3" />
+}
+
+<p>@Model.Content</p>
+
+@if (!string.IsNullOrEmpty(Model.VideoUrl))
+{
+    <div class="mt-3">
+        <iframe width="560" height="315" src="@Model.VideoUrl" frameborder="0" allowfullscreen></iframe>
+    </div>
+}
