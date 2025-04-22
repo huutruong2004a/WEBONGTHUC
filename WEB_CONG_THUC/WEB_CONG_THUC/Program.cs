@@ -17,6 +17,7 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.CategoryServices(); ;
 
+builder.Services.AddScoped<WEB_CONG_THUC.Repositories.IBlogRepository, WEB_CONG_THUC.Repositories.BlogRepository>();
 
 var app = builder.Build();
 

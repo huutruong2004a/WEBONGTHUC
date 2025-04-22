@@ -12,4 +12,6 @@ public class ApplicationDbContext : IdentityDbContext
     }
     public DbSet<Cooking> Cookings { get; set; }
     public DbSet<Category> Categories { get; set; }
+    public DbSet<Blog> Blogs { get; set; }
+
 }

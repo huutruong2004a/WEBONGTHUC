@@ -1,0 +1,23 @@
+﻿@model WEB_CONG_THUC.Models.Blog
+
+<h2>Đăng bài viết mới</h2>
+
+<form asp-action="Create" method="post" enctype="multipart/form-data">
+    <div>
+        <label asp-for="Title"></label>
+        <input asp-for="Title" class="form-control" />
+    </div>
+    <div>
+        <label asp-for="Content"></label>
+        <textarea asp-for="Content" class="form-control" rows="5"></textarea>
+    </div>
+    <div>
+        <label asp-for="ImageFile">Chọn ảnh (nếu có)</label>
+        <input asp-for="ImageFile" type="file" class="form-control" />
+    </div>
+    <div>
+        <label asp-for="VideoUrl">Link video (nếu có)</label>
+        <input asp-for="VideoUrl" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Đăng bài</button>
+</form>
