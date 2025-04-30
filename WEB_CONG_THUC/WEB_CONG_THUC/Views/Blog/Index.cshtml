@@ -1,14 +1,23 @@
 ﻿@model IEnumerable<WEB_CONG_THUC.Models.Blog>
 
-<h2>Danh sách bài viết</h2>
+@{
+    ViewData["Title"] = "Danh sách Blog";
+}
+
+<h2>Blog Mới Nhất</h2>
 
 @foreach (var blog in Model)
 {
-    <div class="card mb-3">
+    <div class="card mb-4">
         <div class="card-body">
-            <h3>@blog.Title</h3>
-            <p>@blog.Content.Substring(0, Math.Min(blog.Content.Length, 100))...</p>
-            <a href="@Url.Action("Details", "Blog", new { slug = blog.Slug })" class="btn btn-primary">Xem chi tiết</a>
+            <h4 class="card-title">
+                <a asp-action="Details" asp-route-slug="@blog.Slug">@blog.Title</a>
+            </h4>
+            <p class="card-text"><small class="text-muted">Đăng lúc: @blog.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small></p>
+            <div class="preview-content">
+                @Html.Raw(blog.Content.Length > 300 ? blog.Content.Substring(0, 300) + "..." : blog.Content)
+            </div>
+            <a class="btn btn-primary mt-2" asp-action="Details" asp-route-slug="@blog.Slug">Xem chi tiết</a>
         </div>
     </div>
 }

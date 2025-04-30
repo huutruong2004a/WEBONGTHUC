@@ -1,23 +1,28 @@
 ﻿@model WEB_CONG_THUC.Models.Blog
 
-<h2>Đăng bài viết mới</h2>
+@{
+    ViewData["Title"] = "Tạo blog";
+}
 
-<form asp-action="Create" method="post" enctype="multipart/form-data">
-    <div>
+<h2>Tạo Blog</h2>
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
         <label asp-for="Title"></label>
         <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
     </div>
-    <div>
+    <div class="form-group">
         <label asp-for="Content"></label>
-        <textarea asp-for="Content" class="form-control" rows="5"></textarea>
+        <textarea asp-for="Content" class="form-control summernote"></textarea>
+        <span asp-validation-for="Content" class="text-danger"></span>
     </div>
-    <div>
-        <label asp-for="ImageFile">Chọn ảnh (nếu có)</label>
-        <input asp-for="ImageFile" type="file" class="form-control" />
-    </div>
-    <div>
-        <label asp-for="VideoUrl">Link video (nếu có)</label>
-        <input asp-for="VideoUrl" class="form-control" />
-    </div>
-    <button type="submit" class="btn btn-primary mt-2">Đăng bài</button>
+    <button type="submit" class="btn btn-primary">Lưu</button>
 </form>
+
+@section Scripts {
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-lite.min.js"></script>
+    <script src="~/js/summernote.js"></script>
+}
+

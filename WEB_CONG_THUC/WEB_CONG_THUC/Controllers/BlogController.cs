@@ -44,19 +44,6 @@ namespace WEB_CONG_THUC.Controllers
         {
             if (ModelState.IsValid)
             {
-                if (blog.ImageFile != null)
-                {
-                    var fileName = Guid.NewGuid() + Path.GetExtension(blog.ImageFile.FileName);
-                    var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads", fileName);
-
-                    using (var stream = new FileStream(uploadPath, FileMode.Create))
-                    {
-                        await blog.ImageFile.CopyToAsync(stream);
-                    }
-
-                    blog.ImageUrl = "/uploads/" + fileName;
-                }
-
                 blog.Slug = SlugHelper.GenerateSlug(blog.Title);
                 blog.CreatedAt = DateTime.Now;
 
@@ -65,7 +52,29 @@ namespace WEB_CONG_THUC.Controllers
 
                 return RedirectToAction("Index");
             }
+           
             return View(blog);
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> UploadImage(IFormFile image)
+        {
+            if (image != null && image.Length > 0)
+            {
+                var fileName = Guid.NewGuid() + Path.GetExtension(image.FileName);
+                var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads", fileName);
+
+                using (var stream = new FileStream(path, FileMode.Create))
+                {
+                    await image.CopyToAsync(stream);
+                }
+
+                var imageUrl = Url.Content("~/uploads/" + fileName);
+                return Content(imageUrl);
+            }
+
+            return BadRequest();
         }
 
     }
