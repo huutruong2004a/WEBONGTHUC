@@ -1,18 +1,17 @@
 ﻿@model WEB_CONG_THUC.Models.Blog
 
+@{
+    ViewData["Title"] = Model.Title;
+}
+
 <h2>@Model.Title</h2>
-<p><i>Đăng ngày: @Model.CreatedAt.ToString("dd/MM/yyyy")</i></p>
+<p><small>Đăng lúc: @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small></p>
 
-@if (!string.IsNullOrEmpty(Model.ImageUrl))
-{
-    <img src="@Model.ImageUrl" alt="Ảnh minh họa" class="img-fluid mb-3" />
-}
+<hr />
 
-<p>@Model.Content</p>
+<!-- Nội dung blog có thể chứa HTML và hình ảnh -->
+<div class="blog-content">
+    @Html.Raw(Model.Content)
+</div>
 
-@if (!string.IsNullOrEmpty(Model.VideoUrl))
-{
-    <div class="mt-3">
-        <iframe width="560" height="315" src="@Model.VideoUrl" frameborder="0" allowfullscreen></iframe>
-    </div>
-}
+<a href="@Url.Action("Index")" class="btn btn-secondary mt-3">Quay lại danh sách</a>
