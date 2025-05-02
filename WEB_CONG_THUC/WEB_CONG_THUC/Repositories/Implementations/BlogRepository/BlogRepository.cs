@@ -20,7 +20,12 @@ namespace WEB_CONG_THUC.Repositories
         {
             return await _context.Blogs.OrderByDescending(b => b.CreatedAt).ToListAsync();
         }
-
+        public async Task<List<Blog>> GetApprovedAsync()
+        {
+            return await _context.Blogs
+                .Where(b => b.Status == BlogStatus.Approved)
+                .ToListAsync();
+        }
         public async Task<Blog?> GetByIdAsync(int id)
         {
             return await _context.Blogs.FindAsync(id);
@@ -36,14 +41,16 @@ namespace WEB_CONG_THUC.Repositories
             await _context.Blogs.AddAsync(blog);
         }
 
-        public void Update(Blog blog)
+        public Task UpdateAsync(Blog blog)
         {
             _context.Blogs.Update(blog);
+            return Task.CompletedTask;
         }
 
-        public void Delete(Blog blog)
+        public Task DeleteAsync(Blog blog)
         {
             _context.Blogs.Remove(blog);
+            return Task.CompletedTask;
         }
 
         public async Task SaveAsync()
