@@ -26,6 +26,7 @@ namespace WEB_CONG_THUC.Models
 
         public BlogStatus Status { get; set; } = BlogStatus.Pending; // Mặc định là chờ duyệt
 
+        public int ViewCount { get; set; }
     }
 
 }
