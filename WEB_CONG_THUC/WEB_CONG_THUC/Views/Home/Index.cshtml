@@ -1,4 +1,6 @@
-﻿@{
+﻿@using System.Text.RegularExpressions
+
+@{
     ViewData["Title"] = "Trang chủ";
 }
 
@@ -90,24 +92,30 @@
         </div>
 
         <div class="blog-grid">
-            @for (int i = 1; i <= 3; i++)
+            @foreach (var blog in Model)
             {
-                <div class="blog-card">
+                <a asp-controller="Blog" asp-action="Details" asp-route-slug="@blog.Slug" class="blog-card">
                     <div class="blog-image">
-                        <img src="/images/blog-@(i).jpg" alt="Blog @i" />
+                        <img src="/images/blog-default.jpg" alt="@blog.Title" />
                     </div>
                     <div class="blog-content">
-                        <h3>Bí quyết nấu ăn ngon mỗi ngày @i</h3>
-                        <p>Khám phá những bí quyết nấu ăn từ các đầu bếp chuyên nghiệp giúp bạn nâng cao tay nghề và tạo ra những món ăn tuyệt vời.</p>
+                        <h3>@blog.Title</h3>
+                        <p>
+                            @{
+                                var plainText = Regex.Replace(blog.Content, "<.*?>", String.Empty); // Loại bỏ tag HTML
+                                var summary = plainText.Length > 150 ? plainText.Substring(0, 150) + "..." : plainText;
+                            }
+                            @summary
+                        </p>
                         <div class="blog-meta">
                             <div class="author">
                                 <img src="/images/author.jpg" alt="Tác giả" />
                                 <span>Tác giả</span>
                             </div>
-                            <span class="date">3 ngày trước</span>
+                            <span class="date">@blog.CreatedAt.ToString("dd/MM/yyyy")</span>
                         </div>
                     </div>
-                </div>
+                </a>
             }
         </div>
 

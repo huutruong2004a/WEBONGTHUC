@@ -62,5 +62,12 @@ namespace WEB_CONG_THUC.Repositories
         {
             return _context.Blogs.OrderByDescending(b => b.CreatedAt).Take(count).ToList();
         }
+        public IEnumerable<Blog> GetTopViewedBlogs(int count)
+        {
+            return _context.Blogs
+                           .OrderByDescending(b => b.ViewCount)
+                           .Take(count)
+                           .ToList();
+        }
     }
 }

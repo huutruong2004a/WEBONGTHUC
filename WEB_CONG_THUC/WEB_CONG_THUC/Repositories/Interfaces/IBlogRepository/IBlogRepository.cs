@@ -14,6 +14,8 @@ namespace WEB_CONG_THUC.Repositories
         Task UpdateAsync(Blog blog);
         Task DeleteAsync(Blog blog);
         Task SaveAsync();
-        IEnumerable<Blog> GetLatestBlogs(int count);
+        IEnumerable<Blog> GetTopViewedBlogs(int count);
+
+
     }
 }
