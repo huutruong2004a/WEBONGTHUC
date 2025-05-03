@@ -19,8 +19,8 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
-        var latestBlogs = _blogRepository.GetLatestBlogs(3); // Lấy 3 bài blog mới nhất
-        return View(latestBlogs);
+        var topBlogs = _blogRepository.GetTopViewedBlogs(3); // Lấy 3 blog nhiều lượt xem nhất
+        return View(topBlogs);
     }
 
     public IActionResult Privacy()
