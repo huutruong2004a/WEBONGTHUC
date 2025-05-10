@@ -23,7 +23,7 @@
     </div>
 </section>
 
-<!-- Popular Recipes Section -->
+@* <!-- Popular Recipes Section -->
 <section class="recipes-section">
     <div class="container">
         <div class="section-header">
@@ -75,6 +75,100 @@
             </div>
 
             <!-- Other tab contents would be similar but with different data -->
+        </div>
+
+        <div class="section-footer">
+            <a href="#" class="btn btn-outline">Xem thêm công thức</a>
+        </div>
+    </div>
+</section> *@
+
+<section class="recipes-section">
+    <div class="container">
+        <div class="section-header">
+            <div class="badge">Khám phá</div>
+            <h2>Công thức phổ biến</h2>
+            <p>Những công thức được yêu thích nhất từ cộng đồng của chúng ta</p>
+        </div>
+
+        <div class="recipe-tabs">
+            <ul class="tabs-list">
+                <li class="active"><a href="#all">Tất cả</a></li>
+                <li><a href="#breakfast">Bữa sáng</a></li>
+                <li><a href="#lunch">Bữa trưa</a></li>
+                <li><a href="#dinner">Bữa tối</a></li>
+                <li><a href="#dessert">Tráng miệng</a></li>
+            </ul>
+
+            <div class="tab-content active" id="all">
+                <div class="recipe-grid">
+                    <!-- Công thức mẫu với video -->
+                    <div class="recipe-card">
+                        <div class="recipe-image">
+                            <img src="~/images/recipes/ca-kho.jpg" alt="Món ăn 1" />
+                            <button class="favorite-btn">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                            <div class="recipe-badge">
+                                <span>Phổ biến</span>
+                            </div>
+                        </div>
+                        <div class="recipe-content">
+                            <h3>Công thức Cá Kho</h3>
+                            <p>Cá Kho Thơm Ngon.</p>
+                            <div class="recipe-meta">
+                                <div class="meta-item">
+                                    <i class="fas fa-clock"></i>
+                                    <span>30 phút</span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-users"></i>
+                                    <span>4 người</span>
+                                </div>
+                            </div>
+                            <!-- Video hướng dẫn -->
+                            <div class="recipe-video">
+                                <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" class="btn btn-video">
+                                    <i class="fas fa-video"></i> Xem video hướng dẫn
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thêm nhiều công thức khác ở đây... -->
+                    <div class="recipe-card">
+                        <div class="recipe-image">
+                            <img src="/images/recipes/canh-chua-ca-loc.jpg" alt="Món ăn 2" />
+                            <button class="favorite-btn">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                            <div class="recipe-badge">
+                                <span>Phổ biến</span>
+                            </div>
+                        </div>
+                        <div class="recipe-content">
+                            <h3>Công thức Nấu Canh Chua Cá Lóc</h3>
+                            <p>Canh Chua cá lóc.</p>
+                            <div class="recipe-meta">
+                                <div class="meta-item">
+                                    <i class="fas fa-clock"></i>
+                                    <span>25 phút</span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-users"></i>
+                                    <span>2 người</span>
+                                </div>
+                            </div>
+                            <!-- Video hướng dẫn -->
+                            <div class="recipe-video">
+                                <a href="https://www.youtube.com/watch?v=zvlct2ZXhj8" target="_blank" class="btn btn-video">
+                                    <i class="fas fa-video"></i> Xem video hướng dẫn
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="section-footer">
