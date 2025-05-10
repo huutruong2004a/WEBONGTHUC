@@ -15,9 +15,9 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
-builder.Services.CategoryServices(); ;
+builder.Services.CategoryServices();
 
-builder.Services.AddScoped<WEB_CONG_THUC.Repositories.IBlogRepository, WEB_CONG_THUC.Repositories.BlogRepository>();
+builder.Services.BlogServices();
 
 var app = builder.Build();
 
