@@ -1,0 +1,249 @@
+﻿@model WEB_CONG_THUC.Models.Recipe
+@{
+    ViewData["Title"] = "Thêm công thức mới";
+}
+
+<section class="recipe-form-section">
+    <div class="container">
+        <div class="section-header">
+            <h1>Thêm công thức mới</h1>
+            <p>Chia sẻ công thức nấu ăn của bạn với cộng đồng</p>
+        </div>
+
+        <div class="recipe-form-container">
+            <form asp-action="Create" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="form-grid">
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label asp-for="Title" class="control-label"></label>
+                            <input asp-for="Title" class="form-control" placeholder="Nhập tên công thức" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Description" class="control-label"></label>
+                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Mô tả ngắn về công thức"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="ImageFile" class="control-label"></label>
+                            <div class="image-upload-container">
+                                <div class="image-preview">
+                                    <img id="preview" src="/images/recipe-placeholder.jpg" alt="Preview" />
+                                </div>
+                                <div class="image-upload">
+                                    <label for="ImageFile" class="upload-label">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <span>Chọn hình ảnh</span>
+                                    </label>
+                                    <input asp-for="ImageFile" type="file" accept="image/*" class="form-control" id="ImageFile" onchange="previewImage()" />
+                                </div>
+                            </div>
+                            <span asp-validation-for="ImageFile" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label asp-for="PrepTime" class="control-label"></label>
+                                <input asp-for="PrepTime" class="form-control" min="1" />
+                                <span asp-validation-for="PrepTime" class="text-danger"></span>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label asp-for="CookTime" class="control-label"></label>
+                                <input asp-for="CookTime" class="form-control" min="1" />
+                                <span asp-validation-for="CookTime" class="text-danger"></span>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label asp-for="Servings" class="control-label"></label>
+                                <input asp-for="Servings" class="form-control" min="1" />
+                                <span asp-validation-for="Servings" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="CategoryId" class="control-label"></label>
+                            <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId"></select>
+                            <span asp-validation-for="CategoryId" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="VideoUrl" class="control-label"></label>
+                            <input asp-for="VideoUrl" class="form-control" placeholder="Nhập URL video (YouTube, Vimeo...)" />
+                            <span asp-validation-for="VideoUrl" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label asp-for="Ingredients" class="control-label"></label>
+                            <div class="ingredients-container">
+                                <div class="ingredients-list" id="ingredientsList">
+                                    <div class="ingredient-item">
+                                        <input type="text" class="form-control ingredient-input" placeholder="Ví dụ: 200g bột mì" />
+                                        <button type="button" class="btn-remove-ingredient">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-outline btn-sm" id="addIngredient">
+                                    <i class="fas fa-plus"></i> Thêm nguyên liệu
+                                </button>
+                                <textarea asp-for="Ingredients" class="form-control d-none" id="ingredientsValue"></textarea>
+                                <span asp-validation-for="Ingredients" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Instructions" class="control-label"></label>
+                            <div class="instructions-container">
+                                <div class="instructions-list" id="instructionsList">
+                                    <div class="instruction-item">
+                                        <div class="instruction-number">1</div>
+                                        <textarea class="form-control instruction-input" rows="2" placeholder="Mô tả bước thực hiện"></textarea>
+                                        <button type="button" class="btn-remove-instruction">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-outline btn-sm" id="addInstruction">
+                                    <i class="fas fa-plus"></i> Thêm bước
+                                </button>
+                                <textarea asp-for="Instructions" class="form-control d-none" id="instructionsValue"></textarea>
+                                <span asp-validation-for="Instructions" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group form-actions">
+                    <button type="submit" class="btn btn-primary" onclick="prepareSubmit()">
+                        <i class="fas fa-save"></i> Lưu công thức
+                    </button>
+                    <a asp-action="MyRecipes" class="btn btn-outline">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Image preview
+        function previewImage() {
+            var preview = document.getElementById('preview');
+            var file = document.getElementById('ImageFile').files[0];
+            var reader = new FileReader();
+
+            reader.onloadend = function() {
+                preview.src = reader.result;
+            }
+
+            if (file) {
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = "/images/recipe-placeholder.jpg";
+            }
+        }
+
+        // Ingredients handling
+        document.getElementById('addIngredient').addEventListener('click', function() {
+            var list = document.getElementById('ingredientsList');
+            var newItem = document.createElement('div');
+            newItem.className = 'ingredient-item';
+            newItem.innerHTML = `
+                <input type="text" class="form-control ingredient-input" placeholder="Ví dụ: 200g bột mì" />
+                <button type="button" class="btn-remove-ingredient">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            list.appendChild(newItem);
+
+            // Add event listener to the new remove button
+            newItem.querySelector('.btn-remove-ingredient').addEventListener('click', function() {
+                list.removeChild(newItem);
+            });
+        });
+
+        // Add event listeners to existing remove buttons
+        document.querySelectorAll('.btn-remove-ingredient').forEach(function(button) {
+            button.addEventListener('click', function() {
+                var item = button.parentElement;
+                item.parentElement.removeChild(item);
+            });
+        });
+
+        // Instructions handling
+        document.getElementById('addInstruction').addEventListener('click', function() {
+            var list = document.getElementById('instructionsList');
+            var newItem = document.createElement('div');
+            newItem.className = 'instruction-item';
+
+            // Calculate the step number
+            var stepNumber = list.children.length + 1;
+
+            newItem.innerHTML = `
+                <div class="instruction-number">${stepNumber}</div>
+                <textarea class="form-control instruction-input" rows="2" placeholder="Mô tả bước thực hiện"></textarea>
+                <button type="button" class="btn-remove-instruction">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            list.appendChild(newItem);
+
+            // Add event listener to the new remove button
+            newItem.querySelector('.btn-remove-instruction').addEventListener('click', function() {
+                list.removeChild(newItem);
+                // Renumber the steps
+                updateInstructionNumbers();
+            });
+        });
+
+        // Add event listeners to existing remove buttons
+        document.querySelectorAll('.btn-remove-instruction').forEach(function(button) {
+            button.addEventListener('click', function() {
+                var item = button.parentElement;
+                item.parentElement.removeChild(item);
+                // Renumber the steps
+                updateInstructionNumbers();
+            });
+        });
+
+        // Update instruction numbers
+        function updateInstructionNumbers() {
+            var items = document.querySelectorAll('.instruction-item');
+            items.forEach(function(item, index) {
+                item.querySelector('.instruction-number').textContent = index + 1;
+            });
+        }
+
+        // Prepare form data before submit
+        function prepareSubmit() {
+            // Prepare ingredients
+            var ingredients = [];
+            document.querySelectorAll('.ingredient-input').forEach(function(input) {
+                if (input.value.trim() !== '') {
+                    ingredients.push(input.value.trim());
+                }
+            });
+            document.getElementById('ingredientsValue').value = ingredients.join('\n');
+
+            // Prepare instructions
+            var instructions = [];
+            document.querySelectorAll('.instruction-input').forEach(function(input) {
+                if (input.value.trim() !== '') {
+                    instructions.push(input.value.trim());
+                }
+            });
+            document.getElementById('instructionsValue').value = instructions.join('\n');
+        }
+    </script>
+}

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WEB_CONG_THUC.Data;
 
@@ -11,9 +12,11 @@ using WEB_CONG_THUC.Data;
 namespace WEB_CONG_THUC.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250510031840_Test")]
+    partial class Test
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -277,58 +280,6 @@ namespace WEB_CONG_THUC.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Bữa sáng"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Bữa trưa"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Bữa tối"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "Tráng miệng"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Name = "Món khai vị"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Name = "Món chay"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Name = "Đồ uống"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Name = "Bánh ngọt"
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Name = "Món ăn nhanh"
-                        },
-                        new
-                        {
-                            Id = 10,
-                            Name = "Món ăn truyền thống"
-                        });
                 });
 
             modelBuilder.Entity("WEB_CONG_THUC.Models.Cooking", b =>
@@ -401,10 +352,6 @@ namespace WEB_CONG_THUC.Data.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("VideoUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -412,8 +359,6 @@ namespace WEB_CONG_THUC.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Recipes");
                 });
@@ -439,67 +384,11 @@ namespace WEB_CONG_THUC.Data.Migrations
                     b.Property<int>("RecipeId")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("RecipeId");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("RecipeReview");
-                });
-
-            modelBuilder.Entity("WEB_CONG_THUC.Models.Video", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AuthorEmail")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AuthorName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("CategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<bool>("IsApproved")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("ThumbnailUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("VideoUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
-
-                    b.ToTable("Videos");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -556,7 +445,7 @@ namespace WEB_CONG_THUC.Data.Migrations
             modelBuilder.Entity("WEB_CONG_THUC.Models.Cooking", b =>
                 {
                     b.HasOne("WEB_CONG_THUC.Models.Category", "Category")
-                        .WithMany()
+                        .WithMany("Cook")
                         .HasForeignKey("CategoryId");
 
                     b.Navigation("Category");
@@ -565,20 +454,12 @@ namespace WEB_CONG_THUC.Data.Migrations
             modelBuilder.Entity("WEB_CONG_THUC.Models.Recipe", b =>
                 {
                     b.HasOne("WEB_CONG_THUC.Models.Category", "Category")
-                        .WithMany("Recipes")
+                        .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.Navigation("Category");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("WEB_CONG_THUC.Models.RecipeReview", b =>
@@ -589,29 +470,12 @@ namespace WEB_CONG_THUC.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.Navigation("Recipe");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("WEB_CONG_THUC.Models.Video", b =>
-                {
-                    b.HasOne("WEB_CONG_THUC.Models.Category", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId");
-
-                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("WEB_CONG_THUC.Models.Category", b =>
                 {
-                    b.Navigation("Recipes");
+                    b.Navigation("Cook");
                 });
 
             modelBuilder.Entity("WEB_CONG_THUC.Models.Recipe", b =>

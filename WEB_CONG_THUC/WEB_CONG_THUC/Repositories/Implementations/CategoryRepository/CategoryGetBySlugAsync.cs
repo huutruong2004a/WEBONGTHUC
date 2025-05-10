@@ -17,7 +17,7 @@ namespace WEB_CONG_THUC.Repositories.Implementations.CategoryRepository
         public async Task<Category?> GetBySlugAsync(string slug)
         {
             return await _context.Categories
-                .Include(d => d.Cook)
+                .Include(d => d.Recipes)
                 .FirstOrDefaultAsync(d => d.Slug == slug);
         }
     }

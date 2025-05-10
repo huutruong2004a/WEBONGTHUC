@@ -17,7 +17,7 @@
                 </div>
             </div>
             <div class="hero-image">
-                <img src="/images/hero-image.jpg" alt="Món ăn ngon" />
+                <img src="~/images/recipes/ca-kho.jpg" alt="Món ăn ngon" />
             </div>
         </div>
     </div>
@@ -96,13 +96,18 @@
             {
                 <a asp-controller="Blog" asp-action="Details" asp-route-slug="@blog.Slug" class="blog-card">
                     <div class="blog-image">
-                        <img src="/images/blog-default.jpg" alt="@blog.Title" />
+                        @{
+                            // Sử dụng Regex để tìm thẻ img đầu tiên trong Content
+                            var imgTagMatch = System.Text.RegularExpressions.Regex.Match(blog.Content, "<img[^>]+src\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>");
+                            var imageUrl = imgTagMatch.Success ? imgTagMatch.Groups[1].Value : "/images/blog-default.jpg";
+                        }
+                        <img src="@imageUrl" alt="@blog.Title" />
                     </div>
                     <div class="blog-content">
                         <h3>@blog.Title</h3>
                         <p>
                             @{
-                                var plainText = Regex.Replace(blog.Content, "<.*?>", String.Empty); // Loại bỏ tag HTML
+                                var plainText = Regex.Replace(blog.Content, "<.*?>", String.Empty);
                                 var summary = plainText.Length > 150 ? plainText.Substring(0, 150) + "..." : plainText;
                             }
                             @summary
