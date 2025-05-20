@@ -91,31 +91,41 @@
             <p>Khám phá các bài viết về ẩm thực, mẹo nấu ăn và văn hóa ẩm thực</p>
         </div>
 
+
         <div class="blog-grid">
             @foreach (var blog in Model)
             {
-                <a asp-controller="Blog" asp-action="Details" asp-route-slug="@blog.Slug" class="blog-card">
-                    <div class="blog-image">
-                        <img src="/images/blog-default.jpg" alt="@blog.Title" />
-                    </div>
-                    <div class="blog-content">
-                        <h3>@blog.Title</h3>
-                        <p>
+                // Chỉ hiển thị các bài blog đã được duyệt
+                if (blog.Status == BlogStatus.Approved)
+                {
+                    <a asp-controller="Blog" asp-action="Details" asp-route-slug="@blog.Slug" class="blog-card">
+                        <div class="blog-image">
                             @{
-                                var plainText = Regex.Replace(blog.Content, "<.*?>", String.Empty); // Loại bỏ tag HTML
-                                var summary = plainText.Length > 150 ? plainText.Substring(0, 150) + "..." : plainText;
+                                // Sử dụng Regex để tìm thẻ img đầu tiên trong Content
+                                var imgTagMatch = System.Text.RegularExpressions.Regex.Match(blog.Content, "<img[^>]+src\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>");
+                                var imageUrl = imgTagMatch.Success ? imgTagMatch.Groups[1].Value : "/images/blog-default.jpg";
                             }
-                            @summary
-                        </p>
-                        <div class="blog-meta">
-                            <div class="author">
-                                <img src="/images/author.jpg" alt="Tác giả" />
-                                <span>Tác giả</span>
-                            </div>
-                            <span class="date">@blog.CreatedAt.ToString("dd/MM/yyyy")</span>
+                            <img src="@imageUrl" alt="@blog.Title" />
                         </div>
-                    </div>
-                </a>
+                        <div class="blog-content">
+                            <h3>@blog.Title</h3>
+                            <p>
+                                @{
+                                    var plainText = Regex.Replace(blog.Content, "<.*?>", String.Empty);
+                                    var summary = plainText.Length > 150 ? plainText.Substring(0, 150) + "..." : plainText;
+                                }
+                                @summary
+                            </p>
+                            <div class="blog-meta">
+                                <div class="author">
+                                    <img src="/images/author.jpg" alt="Tác giả" />
+                                    <span>Tác giả</span>
+                                </div>
+                                <span class="date">@blog.CreatedAt.ToString("dd/MM/yyyy")</span>
+                            </div>
+                        </div>
+                    </a>
+                }
             }
         </div>
 
