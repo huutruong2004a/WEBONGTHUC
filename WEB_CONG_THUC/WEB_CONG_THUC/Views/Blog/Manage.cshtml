@@ -32,7 +32,14 @@
         {
             <tr>
                 <td>
-                    <a asp-action="Details" asp-route-slug="@blog.Slug">@blog.Title</a>
+                    @if (blog.Status == WEB_CONG_THUC.Models.BlogStatus.Pending)
+                    {
+                        <a asp-action="Preview" asp-route-id="@blog.Id">@blog.Title</a>
+                    }
+                    else
+                    {
+                        <a asp-action="Details" asp-route-slug="@blog.Slug">@blog.Title</a>
+                    }
                 </td>
                 <td>@blog.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
                 <td>@blog.Status</td>
@@ -52,6 +59,10 @@
                             <input type="hidden" name="id" value="@blog.Id" />
                             <button type="submit" class="btn btn-warning btn-sm">Từ chối</button>
                         </form>
+                        <!-- Trong vòng lặp hiển thị danh sách bài viết -->
+                        <a asp-action="Preview" asp-route-id="@blog.Id" class="btn btn-info btn-sm">
+                            <i class="fas fa-eye"></i> Xem trước
+                        </a>
                     }
                 </td>
             </tr>
