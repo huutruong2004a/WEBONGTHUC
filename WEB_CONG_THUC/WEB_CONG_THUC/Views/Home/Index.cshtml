@@ -157,16 +157,18 @@
             <p>Khám phá các bài viết về ẩm thực, mẹo nấu ăn và văn hóa ẩm thực</p>
         </div>
 
+
         <div class="blog-grid">
             @if (Model.TopBlogs != null && Model.TopBlogs.Any())
             {
-                foreach (var blog in Model.TopBlogs)
+                // Chỉ hiển thị các bài blog đã được duyệt
+                if (blog.Status == BlogStatus.Approved)
                 {
                     <a asp-controller="Blog" asp-action="Details" asp-route-slug="@blog.Slug" class="blog-card">
                         <div class="blog-image">
                             @{
-                                var imgTagMatch = System.Text.RegularExpressions.Regex.Match(blog.Content,
-                                "<img[^>]+src\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>");
+                                // Sử dụng Regex để tìm thẻ img đầu tiên trong Content
+                                var imgTagMatch = System.Text.RegularExpressions.Regex.Match(blog.Content, "<img[^>]+src\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>");
                                 var imageUrl = imgTagMatch.Success ? imgTagMatch.Groups[1].Value : "/images/blog-default.jpg";
                             }
                             <img src="@imageUrl" alt="@blog.Title" />
@@ -183,17 +185,13 @@
                             <div class="blog-meta">
                                 <div class="author">
                                     <img src="/images/author.jpg" alt="Tác giả" />
-                                    <span>Tác giả</span> @* Cần lấy tên tác giả thực tế *@
+                                    <span>Tác giả</span>
                                 </div>
                                 <span class="date">@blog.CreatedAt.ToString("dd/MM/yyyy")</span>
                             </div>
                         </div>
                     </a>
                 }
-            }
-            else
-            {
-                <p>Chưa có bài blog nào.</p>
             }
         </div>
 

@@ -226,5 +226,16 @@ namespace WEB_CONG_THUC.Controllers
             return RedirectToAction("Manage");
         }
 
+        // Xem trước bài đăng
+        [HttpGet]
+        public async Task<IActionResult> Preview(int id)
+        {
+            var blog = await _blogRepository.GetByIdAsync(id);
+            if (blog == null)
+                return NotFound();
+
+            // Không tăng lượt xem khi xem trước
+            return View(blog);
+        }
     }
 }

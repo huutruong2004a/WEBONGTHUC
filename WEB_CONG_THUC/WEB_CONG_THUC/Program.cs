@@ -47,8 +47,7 @@ else
 
 app.UseHttpsRedirection();
 app.UseRouting();
-
-app.UseAuthentication();
+app.UseStaticFiles();
 app.UseAuthorization();
 
 
