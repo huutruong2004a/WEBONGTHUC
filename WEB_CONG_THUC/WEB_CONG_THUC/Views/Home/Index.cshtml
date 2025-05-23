@@ -26,66 +26,6 @@
     </div>
 </section>
 
-@* <!-- Popular Recipes Section -->
-<section class="recipes-section">
-    <div class="container">
-        <div class="section-header">
-            <div class="badge">Khám phá</div>
-            <h2>Công thức phổ biến</h2>
-            <p>Những công thức được yêu thích nhất từ cộng đồng của chúng ta</p>
-        </div>
-
-        <div class="recipe-tabs">
-            <ul class="tabs-list">
-                <li class="active"><a href="#all">Tất cả</a></li>
-                <li><a href="#breakfast">Bữa sáng</a></li>
-                <li><a href="#lunch">Bữa trưa</a></li>
-                <li><a href="#dinner">Bữa tối</a></li>
-                <li><a href="#dessert">Tráng miệng</a></li>
-            </ul>
-
-            <div class="tab-content active" id="all">
-                <div class="recipe-grid">
-                    @for (int i = 1; i <= 8; i++)
-                    {
-                        <div class="recipe-card">
-                            <div class="recipe-image">
-                                <img src="/images/recipe-@(i).jpg" alt="Món ăn @i" />
-                                <button class="favorite-btn">
-                                    <i class="fas fa-heart"></i>
-                                </button>
-                                <div class="recipe-badge">
-                                    <span>Phổ biến</span>
-                                </div>
-                            </div>
-                            <div class="recipe-content">
-                                <h3>Món ngon số @i</h3>
-                                <p>Mô tả ngắn về công thức nấu ăn này, giới thiệu về hương vị và cách thức chế biến.</p>
-                                <div class="recipe-meta">
-                                    <div class="meta-item">
-                                        <i class="fas fa-clock"></i>
-                                        <span>30 phút</span>
-                                    </div>
-                                    <div class="meta-item">
-                                        <i class="fas fa-users"></i>
-                                        <span>4 người</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
-
-            <!-- Other tab contents would be similar but with different data -->
-        </div>
-
-        <div class="section-footer">
-            <a href="#" class="btn btn-outline">Xem thêm công thức</a>
-        </div>
-    </div>
-</section> *@
-
 <section class="recipes-section">
     <div class="container">
         <div class="section-header">
@@ -157,40 +97,43 @@
             <p>Khám phá các bài viết về ẩm thực, mẹo nấu ăn và văn hóa ẩm thực</p>
         </div>
 
-
         <div class="blog-grid">
             @if (Model.TopBlogs != null && Model.TopBlogs.Any())
             {
-                // Chỉ hiển thị các bài blog đã được duyệt
-                if (blog.Status == BlogStatus.Approved)
+                foreach (var blog in Model.TopBlogs)
                 {
-                    <a asp-controller="Blog" asp-action="Details" asp-route-slug="@blog.Slug" class="blog-card">
-                        <div class="blog-image">
-                            @{
-                                // Sử dụng Regex để tìm thẻ img đầu tiên trong Content
-                                var imgTagMatch = System.Text.RegularExpressions.Regex.Match(blog.Content, "<img[^>]+src\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>");
-                                var imageUrl = imgTagMatch.Success ? imgTagMatch.Groups[1].Value : "/images/blog-default.jpg";
-                            }
-                            <img src="@imageUrl" alt="@blog.Title" />
-                        </div>
-                        <div class="blog-content">
-                            <h3>@blog.Title</h3>
-                            <p>
+                    // Chỉ hiển thị các bài blog đã được duyệt
+                    if (blog.Status == BlogStatus.Approved)
+                    {
+                        <a asp-controller="Blog" asp-action="Details" asp-route-slug="@blog.Slug" class="blog-card">
+                            <div class="blog-image">
                                 @{
-                                    var plainText = Regex.Replace(blog.Content, "<.*?>", String.Empty);
-                                    var summary = plainText.Length > 150 ? plainText.Substring(0, 150) + "..." : plainText;
+                                    // Sử dụng Regex để tìm thẻ img đầu tiên trong Content
+                                    var imgTagMatch = System.Text.RegularExpressions.Regex.Match(blog.Content,
+                                    "<img[^>]+src\\s*=\\s*[\'\\\"]([^\'\\\"]+)[\'\\\"][^>]*>");
+                                    var imageUrl = imgTagMatch.Success ? imgTagMatch.Groups[1].Value : "/images/blog-default.jpg";
                                 }
-                                @summary
-                            </p>
-                            <div class="blog-meta">
-                                <div class="author">
-                                    <img src="/images/author.jpg" alt="Tác giả" />
-                                    <span>Tác giả</span>
-                                </div>
-                                <span class="date">@blog.CreatedAt.ToString("dd/MM/yyyy")</span>
+                                <img src="@imageUrl" alt="@blog.Title" />
                             </div>
-                        </div>
-                    </a>
+                            <div class="blog-content">
+                                <h3>@blog.Title</h3>
+                                <p>
+                                    @{
+                                        var plainText = Regex.Replace(blog.Content, "<.*?>", String.Empty);
+                                        var summary = plainText.Length > 150 ? plainText.Substring(0, 150) + "..." : plainText;
+                                    }
+                                    @summary
+                                </p>
+                                <div class="blog-meta">
+                                    <div class="author">
+                                        <img src="/images/author.jpg" alt="Tác giả" />
+                                        <span>Tác giả</span>
+                                    </div>
+                                    <span class="date">@blog.CreatedAt.ToString("dd/MM/yyyy")</span>
+                                </div>
+                            </div>
+                        </a>
+                    }
                 }
             }
         </div>
@@ -200,8 +143,6 @@
         </div>
     </div>
 </section>
-
-
 
 <!-- Video Library Section -->
 <section class="video-section">
