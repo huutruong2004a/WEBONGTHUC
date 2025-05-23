@@ -1,0 +1,329 @@
+﻿@model WEB_CONG_THUC.Models.Recipe
+@{
+    ViewData["Title"] = "Chỉnh sửa công thức";
+}
+
+<section class="recipe-form-section">
+    <div class="container">
+        <div class="section-header">
+            <h1>Chỉnh sửa công thức</h1>
+            <p>Cập nhật công thức nấu ăn của bạn</p>
+        </div>
+
+        <div class="recipe-form-container">
+            <form asp-action="Edit" enctype="multipart/form-data" id="recipeForm">
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="ImageUrl" /> @* Giữ ImageUrl để hiển thị nếu không có file mới và để controller biết ảnh cũ *@
+                <input type="hidden" asp-for="UserId" />
+                <input type="hidden" asp-for="CreatedAt" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="form-grid">
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label asp-for="Title" class="control-label"></label>
+                            <input asp-for="Title" class="form-control" placeholder="Nhập tên công thức" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Description" class="control-label"></label>
+                            <textarea asp-for="Description" class="form-control" rows="3"
+                                placeholder="Mô tả ngắn về công thức"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="ImageFile" class="control-label">Hình ảnh công thức</label>
+                            <div class="image-upload-container">
+                                <div class="image-preview mb-2">
+                                    <img id="preview"
+                                        src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "/images/recipe-placeholder.jpg" : Url.Content(Model.ImageUrl))"
+                                        alt="Xem trước hình ảnh"
+                                        style="max-width: 100%; max-height: 250px; height: auto; border: 1px solid #ddd; padding: 5px; border-radius: 4px;" />
+                                </div>
+                                <div class="image-upload">
+                                    <label for="ImageFile" class="upload-label btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <span>Chọn ảnh mới (nếu muốn thay đổi)</span>
+                                    </label>
+                                    <input asp-for="ImageFile" type="file" accept="image/*" class="form-control d-none"
+                                        id="ImageFile" onchange="previewImage()" />
+                                    <small class="form-text text-muted d-block mt-1">Để trống nếu không muốn thay đổi
+                                        ảnh hiện tại.</small>
+                                </div>
+                            </div>
+                            <span asp-validation-for="ImageFile" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="PrepTime" class="control-label"></label>
+                                    <input asp-for="PrepTime" class="form-control" type="number" min="0" />
+                                    <span asp-validation-for="PrepTime" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="CookTime" class="control-label"></label>
+                                    <input asp-for="CookTime" class="form-control" type="number" min="0" />
+                                    <span asp-validation-for="CookTime" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="Servings" class="control-label"></label>
+                                    <input asp-for="Servings" class="form-control" type="number" min="1" />
+                                    <span asp-validation-for="Servings" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="CategoryId" class="control-label"></label>
+                            <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId"></select>
+                            <span asp-validation-for="CategoryId" class="text-danger"></span>
+        
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="VideoUrl" class="control-label"></label>
+    <input asp-for="VideoUrl" class="form-control"
+                                placeholder="Nhập URL video (YouTube, Vimeo...)" />
+                            <span asp-validation-for="VideoUrl" class="text-danger"></span>   
+                                                                                                             
+                        </div>
+                        
+                        <div class="form-group form-check mt-3">
+                            <input type="checkbox" class="form-check-input" asp-for="IsPopular" id="IsPopularCheck"/>
+                            <label class="form-check-label" asp-for="IsPopular">Công thức nổi bật?</label>
+                        </div>
+                    </div>
+
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label asp-for="Ingredients" class="control-label"></label>
+                            <div class="ingredients-container">
+                                <div class="ingredients-list" id="ingredientsList">
+                                    @* Populated by JavaScript from Model.Ingredients *@
+                                </div>
+                                <button type="button" class="btn btn-outline-success btn-sm mt-2" id="addIngredient">
+                                    <i class="fas fa-plus"></i> Thêm nguyên liệu
+                                </button>
+                                <textarea asp-for="Ingredients" class="form-control d-none" 
+                                    id="ingredientsValue">@Model.Ingredients</textarea>
+                                <span asp-validation-for="Ingredients" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Instructions" class="control-label"></label>
+                            <div class="instructions-container">
+                                <div class="instructions-list" id="instructionsList">
+                                    @* Populated by JavaScript from Model.Instructions *@
+                                </div>
+                                <button type="button" class="btn btn-outline-success btn-sm mt-2" id="addInstruction">
+                                    <i class="fas fa-plus"></i> Thêm bước
+                                </button>
+                                <textarea asp-for="Instructions" class="form-control d-none" 
+                                    id="instructionsValue">@Model.Instructions</textarea>
+                                <span asp-validation-for="Instructions" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group form-actions mt-4 text-center">
+                    <button type="submit" class="btn btn-primary btn-lg px-md-5 me-2">
+                        <i class="fas fa-save"></i> Lưu thay đổi
+                    </button>
+                    <a asp-action="MyRecipes" class="btn btn-outline-secondary btn-lg px-md-4">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            </form>
+        </div>
+</div>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Store initial image URL
+        const initialImageUrl = document.getElementById('preview').src;
+
+        // Image preview
+        function previewImage() {
+            var preview = document.getElementById('preview');
+            var fileInput = document.getElementById('ImageFile');
+            var file = fileInput.files[0];
+            var reader = new FileReader();
+
+            reader.onloadend = function () {
+                preview.src = reader.result;
+            }
+
+            if (file) {
+                reader.readAsDataURL(file);
+            } else {
+                // If no file is selected (e.g., user clears the selection),
+                // revert to the initial image loaded with the page.
+                preview.src = initialImageUrl; 
+            }
+        }
+
+        // Ingredients handling
+        const ingredientsListEl = document.getElementById('ingredientsList');
+        const addIngredientBtnEl = document.getElementById('addIngredient');
+        const ingredientsValueEl = document.getElementById('ingredientsValue');
+
+                   function          addIngredientItem(value = "") {
+                       cons         t newItem = document.createElement('div');
+                     newItem.           className = 'ingredient-item input-group mb-2';
+                   newI             tem.innerHTML = `
+                                    <input type="text" class="form-control ingredient-input" placeholder="Ví dụ: 200g bột mì" value="${value.replace(/"/g, '&quot;')}" />
+                <button type="button" class="btn btn-outline-danger btn-sm btn-remove-ingredient">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            ingredientsListEl.appendChild(newItem);
+            newItem.querySelector('.btn-remove-ingredient').addEventListener('click', function () {
+                ingredientsListEl.removeChild(newItem);
+            });
+        }
+
+        addIngredientBtnEl.addEventListener('click', () => addIngredientItem());
+
+        function loadIngredients() {
+            const rawIngredients = ingredientsValueEl.value.trim();
+            ingredientsListEl.innerHTML = ''; // Clear before loading
+            if (rawIngredients) {
+                const items = rawIngredients.split('\n');
+                items.forEach(itemText => {
+                    if (itemText.trim() !== '') {
+                        addIngredientItem(itemText.trim());
+                   }
+                });
+            }
+            if (ingredientsListEl.children.length === 0) {
+                 addIngredientItem(); // Add one empty if list is empty
+            }
+        }
+
+        // Instructions handling
+        const instructionsListEl = document.getElementById('instructionsList');
+        const addInstructionBtnEl = document.getElementById('addInstruction');
+        const instructionsValueEl = document.getElementById('instructionsValue');
+
+        function updateInstructionNumbers() {
+            const items = instructionsListEl.querySelectorAll('.instruction-item');
+            items.forEach((item, index) => {
+                const numberDiv = item.querySelector('.instruction-number');
+                if (numberDiv) numberDiv.textContent = index + 1;
+            });
+        }
+
+        function addInstructionItem(value = "") {
+                         cons       t newItem = document.createElement('div');
+                newI                tem.className = 'instruction-item input-group mb-2';
+                      cons          t stepNumber = instructionsListEl.children.length + 1;
+                           newItem.     innerHTML = `
+                                    <span class="input-group-text instruction-number">${stepNumber}</span>
+                                    <textarea class="form-control instruction-input" rows="2" placeholder="Mô tả bước thực hiện">${value.replace(/"/g, '&quot;').replace(/\n/g, '&#10;')}</textarea>
+                <button type="button" class="btn btn-outline-danger btn-sm btn-remove-instruction">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            instructionsListEl.appendChild(newItem);
+            newItem.querySelector('.btn-remove-instruction').addEventListener('click', function () {
+                instructionsListEl.removeChild(newItem);
+                updateInstructionNumbers();
+            });
+            updateInstructionNumbers();
+        }
+
+        addInstructionBtnEl.addEventListener('click', () => addInstructionItem());
+
+        function loadInstructions() {
+            const rawInstructions = instructionsValueEl.value.trim();
+            instructionsListEl.innerHTML = ''; // Clear before loading
+            if (rawInstructions) {
+                const items = rawInstructions.split('\n');
+                items.forEach(itemText => {
+                    if (itemText.trim() !== '') {
+                       addInstructionItem(itemText.trim());
+                   }
+                });
+            }
+             if (instructionsListEl.children.length === 0) {
+                 addInstructionItem(); // Add one empty if list is empty
+            }
+          }
+
+        // Prepare form data before submit
+        function prepareSubmit() {
+            var ingredients = [];
+            ingredientsListEl.querySelectorAll('.ingredient-input').forEach(function (input) {
+                if (input.value.trim() !== '') {
+                    ingredients.push(input.value.trim());
+                }
+            });
+            ingredientsValueEl.value = ingredients.join('\n');
+
+            var instructions = [];
+            instructionsListEl.querySelectorAll('.instruction-input').forEach(function (textarea) {
+                if (textarea.value.trim() !== '') {
+                    instructions.push(textarea.value.trim());
+                }
+            });
+            instructionsValueEl.value = instructions.join('\n');
+            return true; 
+        }
+
+        document.getElementById('recipeForm').addEventListener('submit', function (event) {
+      if!prepareSubmit()) {
+                event.preventDefault(); 
+            }
+        });
+
+            // Load existing data on page load     
+        document.addEventListener('DOMContentLoaded', function() {
+            loadIngredients();
+            loadInstructions();
+            
+            // Restore image preview if validation failed and a file was selected
+            if (document.getElementById('ImageFile').files.length > 0) {
+                 previewImage();
+            }
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        .recipe-form-section .card {
+            border-radius: .75rem;
+        }
+
+        .image-upload-container img {
+            border: 1px solid #dee2e6;
+            padding: .25rem;
+        }
+
+        .ingredients-section .input-group,
+        .instructions-section .input-group {
+            transition: all 0.2s ease-in-out;
+        }
+
+        .instructions-section .input-group-text {
+            min-width: 40px;
+            /* Adjust as needed */
+            justify-content: center;
+        }
+    </style>
+}                                                                           

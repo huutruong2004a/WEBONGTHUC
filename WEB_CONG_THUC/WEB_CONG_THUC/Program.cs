@@ -1,7 +1,8 @@
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WEB_CONG_THUC.Data;
 using WEB_CONG_THUC.Extensions.CollectionExtensions;
+using WEB_CONG_THUC.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,17 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
+// Thêm đăng ký cho IRecipeRepository và RecipeRepository
+builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
+
+builder.Services.AddAuthentication()
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
+    });
+
+
 builder.Services.CategoryServices();
 
 builder.Services.BlogServices();
@@ -25,7 +37,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
-} 
+}
 else
 {
     app.UseExceptionHandler("/Home/Error");
@@ -38,7 +50,10 @@ app.UseRouting();
 app.UseStaticFiles();
 app.UseAuthorization();
 
+
 app.MapStaticAssets();
+
+app.UseStaticFiles();
 
 app.MapControllerRoute(
     name: "default",

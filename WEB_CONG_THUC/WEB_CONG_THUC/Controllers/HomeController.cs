@@ -8,19 +8,28 @@ namespace WEB_CONG_THUC.Controllers;
 public class HomeController : Controller
 {
     private readonly IBlogRepository _blogRepository;
-
+    private readonly IRecipeRepository _recipeRepository;
     private readonly ILogger<HomeController> _logger;
 
-    public HomeController(IBlogRepository blogRepository,ILogger<HomeController> logger)
+    public HomeController(IBlogRepository blogRepository, IRecipeRepository recipeRepository, ILogger<HomeController> logger)
     {
         _logger = logger;
         _blogRepository = blogRepository;
+        _recipeRepository = recipeRepository;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        var topBlogs = _blogRepository.GetTopViewedBlogs(3); // Lấy 3 blog nhiều lượt xem nhất
-        return View(topBlogs);
+        var topBlogs = _blogRepository.GetTopViewedBlogs(3);
+        var latestRecipes = await _recipeRepository.GetLatestRecipesAsync(6);
+
+        var viewModel = new HomeViewModel
+        {
+            TopBlogs = topBlogs,
+            LatestRecipes = latestRecipes
+        };
+
+        return View(viewModel);
     }
 
     public IActionResult Privacy()
