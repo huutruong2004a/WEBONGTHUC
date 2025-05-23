@@ -6,7 +6,7 @@ namespace WEB_CONG_THUC.Repositories
     {
         Task<IEnumerable<Recipe>> GetAllAsync();
         Task<IEnumerable<Recipe>> GetLatestRecipesAsync(int count);
-        Task<Recipe> GetByIdAsync(int id);
+        Task<Recipe?> GetByIdAsync(int id);
         // Thêm các phương thức khác nếu cần, ví dụ: lấy công thức theo danh mục, tìm kiếm,...
     }
 }

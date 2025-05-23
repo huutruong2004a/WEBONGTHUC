@@ -42,13 +42,14 @@
                         </div>
                         <div class="meta-item">
                             <i class="fas fa-folder"></i>
-                            <span>Danh mục: @Model.Category.Name</span>
+                            <span>Danh mục: @Model.Category?.Name</span>
                         </div>
                     </div>
 
                     <div class="warning-message">
                         <i class="fas fa-exclamation-triangle"></i>
-                        <p>Lưu ý: Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan đến công thức này sẽ bị xóa vĩnh viễn.</p>
+                        <p>Lưu ý: Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan đến công thức này sẽ bị xóa
+                            vĩnh viễn.</p>
                     </div>
 
                     <form asp-action="Delete" class="delete-form">

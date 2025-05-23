@@ -7,7 +7,7 @@
 namespace WEB_CONG_THUC.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class user : Migration
+    public partial class User : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

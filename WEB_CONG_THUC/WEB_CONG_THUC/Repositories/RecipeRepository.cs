@@ -32,7 +32,7 @@ namespace WEB_CONG_THUC.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Recipe> GetByIdAsync(int id)
+        public async Task<Recipe?> GetByIdAsync(int id)
         {
             return await _context.Recipes
                 .Include(r => r.Category)

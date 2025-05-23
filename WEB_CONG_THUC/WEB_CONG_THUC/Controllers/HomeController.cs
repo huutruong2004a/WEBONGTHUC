@@ -25,8 +25,8 @@ public class HomeController : Controller
 
         var viewModel = new HomeViewModel
         {
-            TopBlogs = topBlogs,
-            LatestRecipes = latestRecipes
+            TopBlogs = topBlogs.ToList(),
+            LatestRecipes = latestRecipes.ToList()
         };
 
         return View(viewModel);

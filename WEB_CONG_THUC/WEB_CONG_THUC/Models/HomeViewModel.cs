@@ -4,7 +4,7 @@ namespace WEB_CONG_THUC.Models
 {
     public class HomeViewModel
     {
-        public IEnumerable<Blog> TopBlogs { get; set; }
-        public IEnumerable<Recipe> LatestRecipes { get; set; }
+        public List<Blog> TopBlogs { get; set; } = new List<Blog>();
+        public List<Recipe> LatestRecipes { get; set; } = new List<Recipe>();
     }
 }

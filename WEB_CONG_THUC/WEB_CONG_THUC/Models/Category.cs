@@ -11,7 +11,7 @@ namespace WEB_CONG_THUC.Models
         public required string Name { get; set; }
         public string? Slug { get; set; }
 
-        public virtual ICollection<Recipe> Recipes { get; set; }
+        public virtual ICollection<Recipe> Recipes { get; set; } = new List<Recipe>();
 
     }
 }

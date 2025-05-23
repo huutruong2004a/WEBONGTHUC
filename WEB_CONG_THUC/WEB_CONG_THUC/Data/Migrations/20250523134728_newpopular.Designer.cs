@@ -13,7 +13,7 @@ namespace WEB_CONG_THUC.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20250523134728_newpopular")]
-    partial class newpopular
+    partial class NewPopular
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

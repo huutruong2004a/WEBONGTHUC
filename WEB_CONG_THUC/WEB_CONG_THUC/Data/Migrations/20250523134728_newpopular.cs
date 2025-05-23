@@ -5,7 +5,7 @@
 namespace WEB_CONG_THUC.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class newpopular : Migration
+    public partial class NewPopular : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

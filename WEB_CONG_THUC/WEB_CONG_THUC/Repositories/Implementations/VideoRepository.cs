@@ -62,8 +62,8 @@ namespace WEB_CONG_THUC.Repositories
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 query = query.Where(v =>
-                    v.Title.Contains(searchTerm) ||
-                    v.Description.Contains(searchTerm));
+                    (v.Title != null && v.Title.Contains(searchTerm)) ||
+                    (v.Description != null && v.Description.Contains(searchTerm)));
             }
 
             if (categoryId.HasValue)

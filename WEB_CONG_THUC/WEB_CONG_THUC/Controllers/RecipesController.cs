@@ -171,7 +171,7 @@ namespace CookShare.Controllers
 
             // Check if the user is the owner of the recipe
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (recipe != null && recipe.UserId != userId)
+            if (recipe.UserId != userId) // recipe is already checked for null
             {
                 return Forbid();
             }
