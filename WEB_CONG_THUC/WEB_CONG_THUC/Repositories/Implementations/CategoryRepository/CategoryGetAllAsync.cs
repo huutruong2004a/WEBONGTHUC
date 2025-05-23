@@ -15,7 +15,7 @@ namespace WEB_CONG_THUC.Repositories.Implementations.CategoryRepository
         public async Task<IEnumerable<Category>> GetAllAsync()
         {
             return await _context.Categories
-                                .Include(p => p.Cook) 
+                                .Include(p => p.Recipes) 
                                 .ToListAsync();
         }
     }

@@ -1,0 +1,69 @@
+﻿@model WEB_CONG_THUC.Models.Recipe
+@{
+    ViewData["Title"] = "Xóa công thức";
+}
+
+<section class="delete-recipe-section">
+    <div class="container">
+        <div class="section-header">
+            <h1>Xóa công thức</h1>
+            <p>Bạn có chắc chắn muốn xóa công thức này?</p>
+        </div>
+
+        <div class="delete-recipe-container">
+            <div class="recipe-preview">
+                <div class="recipe-image">
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <img src="@Model.ImageUrl" alt="@Model.Title" />
+                    }
+                    else
+                    {
+                        <img src="/images/recipe-placeholder.jpg" alt="@Model.Title" />
+                    }
+                </div>
+
+                <div class="recipe-details">
+                    <h2>@Model.Title</h2>
+                    <p>@Model.Description</p>
+
+                    <div class="recipe-meta">
+                        <div class="meta-item">
+                            <i class="fas fa-clock"></i>
+                            <span>Thời gian chuẩn bị: @Model.PrepTime phút</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-fire"></i>
+                            <span>Thời gian nấu: @Model.CookTime phút</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-users"></i>
+                            <span>Khẩu phần: @Model.Servings người</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-folder"></i>
+                            <span>Danh mục: @Model.Category.Name</span>
+                        </div>
+                    </div>
+
+                    <div class="warning-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Lưu ý: Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan đến công thức này sẽ bị xóa vĩnh viễn.</p>
+                    </div>
+
+                    <form asp-action="Delete" class="delete-form">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Xác nhận xóa
+                            </button>
+                            <a asp-action="MyRecipes" class="btn btn-outline">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

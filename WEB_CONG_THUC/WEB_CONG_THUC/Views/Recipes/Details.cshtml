@@ -1,0 +1,232 @@
+@using System.Security.Claims
+@model WEB_CONG_THUC.Models.Recipe
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<section class="recipe-details-section">
+    <div class="container">
+        <div class="recipe-header">
+            <h1>@Model.Title</h1>
+            <p class="text-muted">Đăng bởi: @Model.User?.UserName | Ngày đăng: @Model.CreatedAt.ToString("dd/MM/yyyy")
+            </p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <img src="@Model.ImageUrl" alt="@Model.Title" class="img-fluid recipe-image mb-4" />
+                }
+                else
+                {
+                    <img src="/images/recipe-placeholder.jpg" alt="Hình ảnh công thức mặc định"
+                        class="img-fluid recipe-image mb-4" />
+                }
+
+                <div class="recipe-content">
+                    <h4>Mô tả</h4>
+                    <p>@Html.Raw(Model.Description?.Replace("\n", "<br />"))</p>
+
+                    <hr />
+
+                    <div class="row recipe-meta">
+                        <div class="col-md-4">
+                            <i class="fas fa-clock"></i> <strong>Thời gian chuẩn bị:</strong> @Model.PrepTime phút
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-utensils"></i> <strong>Thời gian nấu:</strong> @Model.CookTime phút
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-users"></i> <strong>Khẩu phần:</strong> @Model.Servings người
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <h4>Nguyên liệu</h4>
+                    @if (!string.IsNullOrEmpty(Model.Ingredients))
+                    {
+                        <ul>
+                            @foreach (var ingredient in Model.Ingredients.Split('\n',
+                                                    StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                <li>@ingredient</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p>Chưa có thông tin nguyên liệu.</p>
+                    }
+
+
+                    <hr />
+
+                    <h4>Các bước thực hiện</h4>
+                    @if (!string.IsNullOrEmpty(Model.Instructions))
+                    {
+                        <ol>
+                            @foreach (var instruction in Model.Instructions.Split('\n',
+                                                    StringSplitOptions.RemoveEmptyEntries))
+                            {
+                                <li>@Html.Raw(instruction.Replace("\n", "<br />"))</li>
+                            }
+                        </ol>
+                    }
+                    else
+                    {
+                        <p>Chưa có thông tin hướng dẫn.</p>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.VideoUrl))
+                    {
+                        <hr />
+                        <h4>Video hướng dẫn</h4>
+                        <div class="embed-responsive embed-responsive-16by9">
+                            @{
+                                string videoId = "";
+                                if (Model.VideoUrl.Contains("youtube.com/watch?v="))
+                                {
+                                    videoId = Model.VideoUrl.Split("v=")[1].Split('&')[0];
+                                }
+                                else if (Model.VideoUrl.Contains("youtu.be/"))
+                                {
+                                    videoId = Model.VideoUrl.Split('/').Last().Split('?')[0];
+                                }
+                            }
+                            @if (!string.IsNullOrEmpty(videoId))
+                            {
+                                <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/@videoId"
+                                    allowfullscreen></iframe>
+                            }
+                            else
+                            {
+                                <p><a href="@Model.VideoUrl" target="_blank">Xem video</a></p>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="recipe-sidebar">
+                    <h4>Thông tin thêm</h4>
+                    <p><strong>Danh mục:</strong> @Model.Category?.Name</p>
+                    <!-- Thêm các thông tin khác nếu cần -->
+
+                    @if (User.Identity != null && User.Identity.IsAuthenticated &&
+                                        User.FindFirstValue(ClaimTypes.NameIdentifier) == Model.UserId)
+                    {
+                        <hr />
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm mb-2">
+                            <i class="fas fa-edit"></i> Chỉnh sửa
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger btn-sm mb-2">
+                            <i class="fas fa-trash"></i> Xóa
+                        </a>
+                    }
+                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <hr />
+
+        <!-- Phần Review (đánh giá) -->
+        <div class="reviews-section">
+            <h4>Đánh giá công thức (@Model.Reviews.Count)</h4>
+            @if (Model.Reviews != null && Model.Reviews.Any())
+            {
+                foreach (var review in Model.Reviews.OrderByDescending(r => r.CreatedAt))
+                {
+                    <div class="review-item mb-3 p-3 border rounded">
+                        <p><strong>@review.User?.UserName</strong> - <span
+                                class="text-muted">@review.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span></p>
+                        <p>Đánh giá: @review.Rating/5 sao</p>
+                        <p>@review.Comment</p>
+                    </div>
+                }
+            }
+            else
+            {
+                <p>Chưa có đánh giá nào cho công thức này.</p>
+            }
+
+            @if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                <hr />
+                <h5>Để lại đánh giá của bạn</h5>
+                <form asp-controller="Reviews" asp-action="Create" method="post">
+                    <input type="hidden" name="RecipeId" value="@Model.Id" />
+                    <div class="form-group">
+                        <label for="Rating">Đánh giá (sao):</label>
+                        <select name="Rating" class="form-control" style="width: auto;">
+                            <option value="5">5 sao</option>
+                            <option value="4">4 sao</option>
+                            <option value="3">3 sao</option>
+                            <option value="2">2 sao</option>
+                            <option value="1">1 sao</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="Comment">Bình luận:</label>
+                        <textarea name="Comment" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-paper-plane"></i> Gửi đánh giá</button>
+                </form>
+            }
+            else
+            {
+                <p><a asp-controller="Account" asp-action="Login"
+                        asp-route-returnUrl="@Url.Action("Details", "Recipes", new { id = Model.Id })">Đăng nhập</a> để để
+                    lại đánh giá.</p>
+            }
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <style>
+        .recipe-image {
+            max-height: 500px;
+            width: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .recipe-header h1 {
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .recipe-meta i {
+            margin-right: 8px;
+            color: #5cb85c;
+            /* Màu xanh lá cây theme */
+        }
+
+        .recipe-sidebar {
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .reviews-section h4,
+        .reviews-section h5 {
+            margin-bottom: 1rem;
+        }
+
+        .review-item {
+            background-color: #fff;
+        }
+
+        .embed-responsive {
+            margin-bottom: 1rem;
+        }
+    </style>
+}
