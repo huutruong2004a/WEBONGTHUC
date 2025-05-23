@@ -1,4 +1,5 @@
-﻿@using System.Text.RegularExpressions
+﻿@model WEB_CONG_THUC.Models.HomeViewModel
+@using System.Text.RegularExpressions
 
 @{
     ViewData["Title"] = "Trang chủ";
@@ -10,10 +11,12 @@
         <div class="hero-content">
             <div class="hero-text">
                 <h1>Khám phá hương vị mới mỗi ngày</h1>
-                <p>Chia sẻ, khám phá và lưu trữ các công thức nấu ăn yêu thích của bạn. Cùng nhau tạo nên cộng đồng ẩm thực đa dạng.</p>
+                <p>Chia sẻ, khám phá và lưu trữ các công thức nấu ăn yêu thích của bạn. Cùng nhau tạo nên cộng đồng ẩm
+                    thực đa dạng.</p>
                 <div class="hero-buttons">
-                    <a href="#" class="btn btn-primary">Khám phá công thức</a>
-                    <a href="#" class="btn btn-outline">Chia sẻ công thức của bạn</a>
+                    <a asp-controller="Recipes" asp-action="Index" class="btn btn-primary">Khám phá công thức</a>
+                    <a asp-controller="Recipes" asp-action="Create" class="btn btn-outline">Chia sẻ công thức của
+                        bạn</a>
                 </div>
             </div>
             <div class="hero-image">
@@ -87,92 +90,61 @@
     <div class="container">
         <div class="section-header">
             <div class="badge">Khám phá</div>
-            <h2>Công thức phổ biến</h2>
-            <p>Những công thức được yêu thích nhất từ cộng đồng của chúng ta</p>
+            <h2>Công thức Mới Nhất</h2>
+            <p>Những công thức được chia sẻ gần đây từ cộng đồng của chúng ta</p>
         </div>
 
         <div class="recipe-tabs">
             <ul class="tabs-list">
-                <li class="active"><a href="#all">Tất cả</a></li>
-                <li><a href="#breakfast">Bữa sáng</a></li>
-                <li><a href="#lunch">Bữa trưa</a></li>
-                <li><a href="#dinner">Bữa tối</a></li>
-                <li><a href="#dessert">Tráng miệng</a></li>
+                <li class="active"><a href="#all-recipes">Tất cả</a></li>
+                @* Thêm các tab danh mục nếu cần *@
             </ul>
 
-            <div class="tab-content active" id="all">
+            <div class="tab-content active" id="all-recipes">
                 <div class="recipe-grid">
-                    <!-- Công thức mẫu với video -->
-                    <div class="recipe-card">
-                        <div class="recipe-image">
-                            <img src="~/images/recipes/ca-kho.jpg" alt="Món ăn 1" />
-                            <button class="favorite-btn">
-                                <i class="fas fa-heart"></i>
-                            </button>
-                            <div class="recipe-badge">
-                                <span>Phổ biến</span>
-                            </div>
-                        </div>
-                        <div class="recipe-content">
-                            <h3>Công thức Cá Kho</h3>
-                            <p>Cá Kho Thơm Ngon.</p>
-                            <div class="recipe-meta">
-                                <div class="meta-item">
-                                    <i class="fas fa-clock"></i>
-                                    <span>30 phút</span>
+                    @if (Model.LatestRecipes != null && Model.LatestRecipes.Any())
+                    {
+                        foreach (var recipe in Model.LatestRecipes)
+                        {
+                            <a asp-controller="Recipes" asp-action="Details" asp-route-id="@recipe.Id" class="recipe-card-link">
+                                <div class="recipe-card">
+                                    <div class="recipe-image">
+                                        <img src="@recipe.ImageUrl" alt="@recipe.Title" />
+                                        @if (recipe.IsPopular)
+                                        {
+                                            <div class="recipe-badge">
+                                                <span>Phổ biến</span>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="recipe-content">
+                                        <h3>@recipe.Title</h3>
+                                        <p class="recipe-description-short">@recipe.Description</p>
+                                        <div class="recipe-meta">
+                                            <div class="meta-item">
+                                                <i class="fas fa-clock"></i>
+                                                <span>@recipe.PrepTime phút</span>
+                                            </div>
+                                            <div class="meta-item">
+                                                <i class="fas fa-users"></i>
+                                                <span>@recipe.Servings người</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="meta-item">
-                                    <i class="fas fa-users"></i>
-                                    <span>4 người</span>
-                                </div>
-                            </div>
-                            <!-- Video hướng dẫn -->
-                            <div class="recipe-video">
-                                <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" class="btn btn-video">
-                                    <i class="fas fa-video"></i> Xem video hướng dẫn
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Thêm nhiều công thức khác ở đây... -->
-                    <div class="recipe-card">
-                        <div class="recipe-image">
-                            <img src="/images/recipes/canh-chua-ca-loc.jpg" alt="Món ăn 2" />
-                            <button class="favorite-btn">
-                                <i class="fas fa-heart"></i>
-                            </button>
-                            <div class="recipe-badge">
-                                <span>Phổ biến</span>
-                            </div>
-                        </div>
-                        <div class="recipe-content">
-                            <h3>Công thức Nấu Canh Chua Cá Lóc</h3>
-                            <p>Canh Chua cá lóc.</p>
-                            <div class="recipe-meta">
-                                <div class="meta-item">
-                                    <i class="fas fa-clock"></i>
-                                    <span>25 phút</span>
-                                </div>
-                                <div class="meta-item">
-                                    <i class="fas fa-users"></i>
-                                    <span>2 người</span>
-                                </div>
-                            </div>
-                            <!-- Video hướng dẫn -->
-                            <div class="recipe-video">
-                                <a href="https://www.youtube.com/watch?v=zvlct2ZXhj8" target="_blank" class="btn btn-video">
-                                    <i class="fas fa-video"></i> Xem video hướng dẫn
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                            </a>
+                        }
+                    }
+                    else
+                    {
+                        <p>Chưa có công thức nào được chia sẻ.</p>
+                    }
                 </div>
             </div>
         </div>
 
         <div class="section-footer">
-            <a href="#" class="btn btn-outline">Xem thêm công thức</a>
+            <a asp-controller="Recipes" asp-action="Index" class="btn btn-outline">Xem thêm công thức</a>
         </div>
     </div>
 </section>
@@ -186,35 +158,42 @@
         </div>
 
         <div class="blog-grid">
-            @foreach (var blog in Model)
+            @if (Model.TopBlogs != null && Model.TopBlogs.Any())
             {
-                <a asp-controller="Blog" asp-action="Details" asp-route-slug="@blog.Slug" class="blog-card">
-                    <div class="blog-image">
-                        @{
-                            // Sử dụng Regex để tìm thẻ img đầu tiên trong Content
-                            var imgTagMatch = System.Text.RegularExpressions.Regex.Match(blog.Content, "<img[^>]+src\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>");
-                            var imageUrl = imgTagMatch.Success ? imgTagMatch.Groups[1].Value : "/images/blog-default.jpg";
-                        }
-                        <img src="@imageUrl" alt="@blog.Title" />
-                    </div>
-                    <div class="blog-content">
-                        <h3>@blog.Title</h3>
-                        <p>
+                foreach (var blog in Model.TopBlogs)
+                {
+                    <a asp-controller="Blog" asp-action="Details" asp-route-slug="@blog.Slug" class="blog-card">
+                        <div class="blog-image">
                             @{
-                                var plainText = Regex.Replace(blog.Content, "<.*?>", String.Empty);
-                                var summary = plainText.Length > 150 ? plainText.Substring(0, 150) + "..." : plainText;
+                                var imgTagMatch = System.Text.RegularExpressions.Regex.Match(blog.Content,
+                                "<img[^>]+src\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>");
+                                var imageUrl = imgTagMatch.Success ? imgTagMatch.Groups[1].Value : "/images/blog-default.jpg";
                             }
-                            @summary
-                        </p>
-                        <div class="blog-meta">
-                            <div class="author">
-                                <img src="/images/author.jpg" alt="Tác giả" />
-                                <span>Tác giả</span>
-                            </div>
-                            <span class="date">@blog.CreatedAt.ToString("dd/MM/yyyy")</span>
+                            <img src="@imageUrl" alt="@blog.Title" />
                         </div>
-                    </div>
-                </a>
+                        <div class="blog-content">
+                            <h3>@blog.Title</h3>
+                            <p>
+                                @{
+                                    var plainText = Regex.Replace(blog.Content, "<.*?>", String.Empty);
+                                    var summary = plainText.Length > 150 ? plainText.Substring(0, 150) + "..." : plainText;
+                                }
+                                @summary
+                            </p>
+                            <div class="blog-meta">
+                                <div class="author">
+                                    <img src="/images/author.jpg" alt="Tác giả" />
+                                    <span>Tác giả</span> @* Cần lấy tên tác giả thực tế *@
+                                </div>
+                                <span class="date">@blog.CreatedAt.ToString("dd/MM/yyyy")</span>
+                            </div>
+                        </div>
+                    </a>
+                }
+            }
+            else
+            {
+                <p>Chưa có bài blog nào.</p>
             }
         </div>
 
@@ -236,7 +215,8 @@
             <div class="video-text">
                 <div class="badge">Video</div>
                 <h2>Thư viện video nấu ăn</h2>
-                <p>Lưu trữ và xem lại các video hướng dẫn nấu ăn từ các đầu bếp chuyên nghiệp và những người yêu thích ẩm thực.</p>
+                <p>Lưu trữ và xem lại các video hướng dẫn nấu ăn từ các đầu bếp chuyên nghiệp và những người yêu thích
+                    ẩm thực.</p>
                 <div class="video-buttons">
                     <a href="#" class="btn btn-primary">
                         <i class="fas fa-video"></i>

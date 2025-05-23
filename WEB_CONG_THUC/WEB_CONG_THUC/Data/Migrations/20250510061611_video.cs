@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WEB_CONG_THUC.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class video : Migration
+    public partial class Video : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

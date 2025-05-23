@@ -13,7 +13,7 @@ namespace WEB_CONG_THUC.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20250510061611_video")]
-    partial class video
+    partial class Video
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

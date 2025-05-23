@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using WEB_CONG_THUC.Data;
 using WEB_CONG_THUC.Extensions.CollectionExtensions;
+using WEB_CONG_THUC.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,11 +16,14 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
+// Thêm đăng ký cho IRecipeRepository và RecipeRepository
+builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
+
 builder.Services.AddAuthentication()
     .AddCookie(options =>
     {
         options.LoginPath = "/Account/Login";
-        options.LogoutPath = "/Account/Logout"; 
+        options.LogoutPath = "/Account/Logout";
     });
 
 
@@ -33,7 +37,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
-} 
+}
 else
 {
     app.UseExceptionHandler("/Home/Error");
@@ -44,8 +48,8 @@ else
 app.UseHttpsRedirection();
 app.UseRouting();
 
-app.UseAuthentication();  
-app.UseAuthorization();  
+app.UseAuthentication();
+app.UseAuthorization();
 
 
 app.MapStaticAssets();

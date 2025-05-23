@@ -13,19 +13,19 @@ namespace WEB_CONG_THUC.Models
         public int Rating { get; set; }
 
         [Required]
-        public string Comment { get; set; }
+        public string Comment { get; set; } = string.Empty;
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public int RecipeId { get; set; }
 
         [ForeignKey("RecipeId")]
-        public Recipe Recipe { get; set; }
+        public Recipe? Recipe { get; set; }
 
         [Required]
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
 
         [ForeignKey("UserId")]
-        public IdentityUser User { get; set; }
+        public IdentityUser? User { get; set; }
     }
 }

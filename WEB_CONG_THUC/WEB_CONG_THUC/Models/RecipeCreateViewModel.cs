@@ -1,14 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Http; // Cần cho IFormFile
 using System.ComponentModel.DataAnnotations;
 
 namespace WEB_CONG_THUC.Models
 {
-    //công thức nấu ăn
-    public class Recipe
+    public class RecipeCreateViewModel
     {
-        public int Id { get; set; }
-
         [Required(ErrorMessage = "Vui lòng nhập tên công thức")]
         [StringLength(100, ErrorMessage = "Tên công thức không được vượt quá 100 ký tự")]
         [Display(Name = "Tên công thức")]
@@ -19,9 +15,6 @@ namespace WEB_CONG_THUC.Models
         [Display(Name = "Mô tả")]
         public string Description { get; set; } = string.Empty;
 
-        public string? ImageUrl { get; set; }
-
-        [NotMapped]
         [Display(Name = "Tải lên hình ảnh")]
         public IFormFile? ImageFile { get; set; }
 
@@ -34,16 +27,13 @@ namespace WEB_CONG_THUC.Models
         [Range(1, int.MaxValue, ErrorMessage = "Thời gian nấu phải lớn hơn 0")]
         public int CookTime { get; set; }
 
-        [Display(Name = "Khẩu phần (người)")]
+        [Display(Name = "Số người dùng")]
         [Range(1, int.MaxValue, ErrorMessage = "Số người dùng phải lớn hơn 0")]
         public int Servings { get; set; }
 
         [Required(ErrorMessage = "Vui lòng chọn danh mục")]
         [Display(Name = "Danh mục")]
         public int CategoryId { get; set; }
-
-        [ForeignKey("CategoryId")]
-        public Category? Category { get; set; }
 
         [Required(ErrorMessage = "Vui lòng nhập nguyên liệu")]
         [Display(Name = "Nguyên liệu (mỗi dòng một nguyên liệu)")]
@@ -56,22 +46,5 @@ namespace WEB_CONG_THUC.Models
         [Display(Name = "Video URL (YouTube, Vimeo...)")]
         [Url(ErrorMessage = "URL video không hợp lệ")]
         public string? VideoUrl { get; set; }
-
-        [Display(Name = "Ngày tạo")]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-
-        [Display(Name = "Ngày cập nhật")]
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
-
-        [Required]
-        public string UserId { get; set; } = string.Empty;
-
-        [ForeignKey("UserId")]
-        public IdentityUser? User { get; set; }
-
-        public ICollection<RecipeReview> Reviews { get; set; } = new List<RecipeReview>();
-
-        [Display(Name = "Phổ biến")]
-        public bool IsPopular { get; set; } = false;
     }
 }

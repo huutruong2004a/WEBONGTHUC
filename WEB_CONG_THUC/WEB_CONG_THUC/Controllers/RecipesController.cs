@@ -11,8 +11,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using WEB_CONG_THUC.Data;
-using WEB_CONG_THUC.Models;
 
 namespace CookShare.Controllers
 {
@@ -28,13 +26,30 @@ namespace CookShare.Controllers
         }
 
         // GET: Recipes
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString, int? categoryId)
         {
-            var recipes = await _context.Recipes
+            ViewData["CurrentFilter"] = searchString;
+            ViewData["Categories"] = new SelectList(_context.Categories.OrderBy(c => c.Name), "Id", "Name", categoryId);
+
+            var recipesQuery = _context.Recipes
                 .Include(r => r.Category)
                 .Include(r => r.User)
                 .OrderByDescending(r => r.CreatedAt)
-                .ToListAsync();
+                .AsQueryable(); // Chuyển sang IQueryable để xây dựng truy vấn động
+
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                recipesQuery = recipesQuery.Where(r => r.Title.Contains(searchString) ||
+                                                   (r.Description != null && r.Description.Contains(searchString)) ||
+                                                   (r.User != null && r.User.UserName != null && r.User.UserName.Contains(searchString)));
+            }
+
+            if (categoryId.HasValue)
+            {
+                recipesQuery = recipesQuery.Where(r => r.CategoryId == categoryId.Value);
+            }
+
+            var recipes = await recipesQuery.ToListAsync();
 
             return View(recipes);
         }
@@ -82,46 +97,61 @@ namespace CookShare.Controllers
         public IActionResult Create()
         {
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
-            return View();
+            var viewModel = new RecipeCreateViewModel(); // Khởi tạo ViewModel nếu cần giá trị mặc định
+            return View(viewModel);
         }
 
         // POST: Recipes/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> Create(Recipe recipe)
+        public async Task<IActionResult> Create(RecipeCreateViewModel viewModel) // Sử dụng ViewModel ở đây
+        {
+            if (ModelState.IsValid) // Kiểm tra ModelState của ViewModel
             {
-            if (ModelState.IsValid)
-            {
-                // Handle image upload
-                if (recipe.ImageFile != null)
+                var recipe = new Recipe
+                {
+                    // Map các thuộc tính từ viewModel sang recipe
+                    Title = viewModel.Title,
+                    Description = viewModel.Description,
+                    PrepTime = viewModel.PrepTime,
+                    CookTime = viewModel.CookTime,
+                    Servings = viewModel.Servings,
+                    CategoryId = viewModel.CategoryId,
+                    Ingredients = viewModel.Ingredients,
+                    Instructions = viewModel.Instructions,
+                    VideoUrl = viewModel.VideoUrl,
+
+                    // Gán các giá trị phía server
+                    UserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                };
+
+                // Xử lý upload hình ảnh
+                if (viewModel.ImageFile != null)
                 {
                     string wwwRootPath = _hostEnvironment.WebRootPath;
-                    string fileName = Path.GetFileNameWithoutExtension(recipe.ImageFile.FileName);
-                    string extension = Path.GetExtension(recipe.ImageFile.FileName);
+                    string fileName = Path.GetFileNameWithoutExtension(viewModel.ImageFile.FileName);
+                    string extension = Path.GetExtension(viewModel.ImageFile.FileName);
                     fileName = fileName + DateTime.Now.ToString("yymmssfff") + extension;
                     string path = Path.Combine(wwwRootPath + "/images/recipes/", fileName);
 
                     using (var fileStream = new FileStream(path, FileMode.Create))
                     {
-                        await recipe.ImageFile.CopyToAsync(fileStream);
+                        await viewModel.ImageFile.CopyToAsync(fileStream);
                     }
-
                     recipe.ImageUrl = "/images/recipes/" + fileName;
                 }
-
-                // Set user ID
-                recipe.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                recipe.CreatedAt = DateTime.Now;
-                recipe.UpdatedAt = DateTime.Now;
 
                 _context.Add(recipe);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(MyRecipes));
             }
 
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", recipe.CategoryId);
-            return View(recipe);
+            // Nếu ModelState không hợp lệ, quay lại view Create với ViewModel và các lỗi
+            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", viewModel.CategoryId);
+            return View(viewModel);
         }
 
         // GET: Recipes/Edit/5
@@ -141,7 +171,7 @@ namespace CookShare.Controllers
 
             // Check if the user is the owner of the recipe
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (recipe.UserId != userId)
+            if (recipe != null && recipe.UserId != userId)
             {
                 return Forbid();
             }
@@ -161,10 +191,13 @@ namespace CookShare.Controllers
                 return NotFound();
             }
 
-            // Check if the user is the owner of the recipe
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var existingRecipe = await _context.Recipes.FindAsync(id);
+            if (existingRecipe == null)
+            {
+                return NotFound();
+            }
 
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (existingRecipe.UserId != userId)
             {
                 return Forbid();
@@ -276,8 +309,11 @@ namespace CookShare.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var recipe = await _context.Recipes.FindAsync(id);
+            if (recipe == null)
+            {
+                return NotFound();
+            }
 
-            // Check if the user is the owner of the recipe
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (recipe.UserId != userId)
             {
@@ -294,7 +330,7 @@ namespace CookShare.Controllers
                 }
             }
 
-            _context.Recipes.Remove(recipe);
+            _context.Recipes.Remove(recipe!);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(MyRecipes));
         }
