@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using WEB_CONG_THUC.Models;
@@ -125,6 +126,7 @@ namespace WEB_CONG_THUC.Controllers
             return BadRequest();
         }
 
+        [Authorize(Roles = "Admin")]
         // Trang quản lý bài đăng (cho admin)
         [HttpGet]
         public async Task<IActionResult> Manage(string status = "All")

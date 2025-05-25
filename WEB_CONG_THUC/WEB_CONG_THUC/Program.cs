@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using WEB_CONG_THUC.Data;
 using WEB_CONG_THUC.Extensions.CollectionExtensions;
+using WEB_CONG_THUC.Models;
 using WEB_CONG_THUC.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,10 +11,23 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+.AddDefaultTokenProviders()
+.AddDefaultUI()
+.AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddRazorPages();
+// Thêm cấu hình phân quyền
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireCustomerRole",
+        policy => policy.RequireRole(SD.Role_Customer));
+    options.AddPolicy("RequireAdminRole",
+        policy => policy.RequireRole(SD.Role_Admin));
+});
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+/*builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddEntityFrameworkStores<ApplicationDbContext>();*/
 builder.Services.AddControllersWithViews();
 
 // Thêm đăng ký cho IRecipeRepository và RecipeRepository
@@ -26,7 +40,12 @@ builder.Services.AddAuthentication()
         options.LogoutPath = "/Account/Logout";
     });
 
-
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Identity/Account/Login";
+    options.LogoutPath = "/Identity/Account/Logout";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+});
 builder.Services.CategoryServices();
 
 builder.Services.BlogServices();
@@ -47,14 +66,14 @@ else
 
 app.UseHttpsRedirection();
 app.UseRouting();
-app.UseStaticFiles();
+app.UseAuthentication();
 app.UseAuthorization();
 
 
 app.MapStaticAssets();
 
 app.UseStaticFiles();
-
+app.MapRazorPages();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
@@ -62,5 +81,36 @@ app.MapControllerRoute(
 
 app.MapRazorPages()
    .WithStaticAssets();
+
+// Thêm vào cuối file Program.cs, trước app.Run()
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+
+    // Tạo role Admin nếu chưa tồn tại
+    if (!await roleManager.RoleExistsAsync(SD.Role_Admin))
+    {
+        await roleManager.CreateAsync(new IdentityRole(SD.Role_Admin));
+    }
+
+    // Tạo tài khoản Admin mặc định nếu chưa tồn tại
+    var adminUser = await userManager.FindByEmailAsync(SD.AdminEmail);
+    if (adminUser == null)
+    {
+        adminUser = new IdentityUser
+        {
+            UserName = SD.AdminEmail,
+            Email = SD.AdminEmail,
+            EmailConfirmed = true
+        };
+
+        var result = await userManager.CreateAsync(adminUser, "Admin@123"); // Mật khẩu mặc định
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(adminUser, SD.Role_Admin);
+        }
+    }
+}
 
 app.Run();
