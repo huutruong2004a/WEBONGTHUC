@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
@@ -8,35 +9,38 @@ namespace WEB_CONG_THUC.Models
 {
     public class Video
     {
-        [Key]
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Vui lòng nhập tiêu đề video")]
-        [StringLength(100, ErrorMessage = "Tiêu đề không được vượt quá 100 ký tự")]
-        public string? Title { get; set; }
+        [Display(Name = "Tiêu đề")]
+        public string Title { get; set; } = string.Empty;
 
-        [AllowNull]
-        [StringLength(500, ErrorMessage = "Mô tả không được vượt quá 500 ký tự")]
-        public string? Description { get; set; }
+        [Required(ErrorMessage = "Vui lòng nhập mô tả video")]
+        [Display(Name = "Mô tả")]
+        public string Description { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Vui lòng nhập URL video")]
-        public string? VideoUrl { get; set; }
+        [Display(Name = "URL Video")]
+        public string VideoUrl { get; set; } = string.Empty;
 
-        [AllowNull]
+        [Display(Name = "Hình thu nhỏ")]
         public string? ThumbnailUrl { get; set; }
 
-        public int? CategoryId { get; set; }
+        [NotMapped]
+        public IFormFile? ThumbnailFile { get; set; }
 
-        public string? AuthorName { get; set; }
+        public int? RecipeId { get; set; }
+        [ForeignKey("RecipeId")]
+        public virtual Recipe? Recipe { get; set; }
 
-        [AllowNull]
-        public string? AuthorEmail { get; set; }
+        [Required]
+        public string UserId { get; set; } = string.Empty;
+        [ForeignKey("UserId")]
+        public virtual IdentityUser? User { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public int ViewCount { get; set; } = 0;
 
-        public bool IsApproved { get; set; } = false;
-
-        [ForeignKey("CategoryId")]
-        public virtual Category? Category { get; set; }
+        public virtual ICollection<VideoFavorite> Favorites { get; set; } = new List<VideoFavorite>();
     }
 }

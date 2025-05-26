@@ -1,0 +1,152 @@
+﻿@model IEnumerable<Video>
+
+<div class="container">
+    @* <div class="section-header">
+        <h2>Thư viện Video</h2>
+        <p>Khám phá các video hướng dẫn nấu ăn</p>
+    </div> *@
+    @if (ViewBag.CurrentRecipe != null)
+    {
+        <div class="recipe-header mb-4">
+            <h2>Video hướng dẫn cho công thức: @ViewBag.CurrentRecipe.Title</h2>
+            <a asp-controller="Recipes"
+               asp-action="Details"
+               asp-route-id="@ViewBag.CurrentRecipe.Id"
+               class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left"></i> Quay lại công thức
+            </a>
+        </div>
+    }
+
+    <div class="filters mb-4">
+        <form asp-action="Index" method="get" id="searchForm">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="recipeId" class="form-label">Công thức</label>
+                    <select name="recipeId" id="recipeId" class="form-select">
+                        <option value="">Tất cả công thức</option>
+                        @foreach (var recipe in ViewBag.Recipes)
+                        {
+                            var selected = Context.Request.Query["recipeId"] == recipe.Value ? "selected" : "";
+                            @Html.Raw($"<option value=\"{recipe.Value}\" {selected}>{recipe.Text}</option>")
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="searchString" class="form-label">Tìm kiếm</label>
+                    <input type="text" class="form-control" id="searchString"
+                           name="searchString" value="@Context.Request.Query["searchString"]"
+                           placeholder="Nhập từ khóa tìm kiếm...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i> Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">                        
+            @if (ViewBag.CurrentRecipe != null)
+            {
+                <h3>Chưa có video nào cho công thức này.</h3>
+            }
+            else
+            {
+
+                <i class="fas fa-info-circle"></i>
+                <h3>Không tìm thấy video nào phù hợp.</h3>                            
+            }
+        </div>
+    }
+    else
+    {
+        <div class="video-grid">
+            @foreach (var video in Model)
+            {
+                <div class="video-card" data-recipe-id="@video.RecipeId">
+                    <div class="video-thumbnail">
+                        <img src="@video.ThumbnailUrl" alt="@video.Title" />
+                        <a href="@Url.Action("Details", new { id = video.Id })" class="play-button">
+                            <i class="fas fa-play"></i>
+                        </a>
+                    </div>
+                    <div class="video-info">
+                        <h3>@video.Title</h3>
+                        <p>@video.Description</p>
+                        @if (video.Recipe != null)
+                        {
+                            <div class="recipe-link">
+                                <i class="fas fa-utensils"></i>
+                                <a asp-controller="Recipes" asp-action="Details"
+                                   asp-route-id="@video.RecipeId">
+                                    @video.Recipe.Title
+                                </a>
+                            </div>
+                        }
+                        <div class="video-meta">
+                            <span><i class="fas fa-eye"></i> @video.ViewCount xem</span>
+                            <button class="btn-favorite @(ViewBag.UserFavorites?.Contains(video.Id) ?? false ? "active" : "")"
+                                    data-video-id="@video.Id">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Styles {
+    <style>
+        .recipe-link {
+            margin: 10px 0;
+            padding: 5px 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+
+            .recipe-link i {
+                color: #28a745;
+                margin-right: 5px;
+            }
+
+        .filters {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('searchForm');
+            const recipeSelect = document.getElementById('recipeId');
+            const searchInput = document.getElementById('searchString');
+
+            // Tự động submit form khi thay đổi công thức
+            recipeSelect.addEventListener('change', function() {
+                form.submit();
+            });
+
+            // Debounce function cho tìm kiếm
+            let timeout;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    form.submit();
+                }, 500);
+            });
+        });
+    </script>
+}
