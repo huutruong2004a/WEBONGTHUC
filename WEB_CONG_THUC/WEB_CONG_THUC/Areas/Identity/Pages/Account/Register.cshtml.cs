@@ -104,7 +104,9 @@ namespace WEB_CONG_THUC.Areas.Identity.Pages.Account
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
 
+#nullable enable
             public string? Role { get; set; }
+#nullable disable
             [ValidateNever]
             public IEnumerable<SelectListItem> RoleList { get; set; } 
             
