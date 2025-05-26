@@ -27,7 +27,7 @@ namespace WEB_CONG_THUC.Areas.Admin.Pages
             public required string Role { get; set; }
         }
 
-        public List<UserViewModel> Users { get; set; }
+        public List<UserViewModel> Users { get; set; } = new List<UserViewModel>();
 
         public async Task OnGetAsync()
         {
@@ -40,7 +40,7 @@ namespace WEB_CONG_THUC.Areas.Admin.Pages
                 Users.Add(new UserViewModel
                 {
                     Id = user.Id,
-                    Email = user.Email,
+                    Email = user.Email ?? string.Empty,
                     Role = roles.FirstOrDefault() ?? "No Role"
                 });
             }

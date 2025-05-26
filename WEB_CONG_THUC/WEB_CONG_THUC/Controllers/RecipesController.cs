@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using WEB_CONG_THUC.Repositories;
 
 namespace CookShare.Controllers
 {
@@ -18,9 +19,13 @@ namespace CookShare.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _hostEnvironment;
-
-        public RecipesController(ApplicationDbContext context, IWebHostEnvironment hostEnvironment)
+        private readonly IVideoRepository _videoRepository;
+        private readonly IRecipeRepository _recipeRepository;
+        public RecipesController(ApplicationDbContext context, IWebHostEnvironment hostEnvironment, IVideoRepository videoRepository,
+            IRecipeRepository recipeRepository)
         {
+            _videoRepository = videoRepository;
+            _recipeRepository = recipeRepository;
             _context = context;
             _hostEnvironment = hostEnvironment;
         }
@@ -106,12 +111,11 @@ namespace CookShare.Controllers
         [ValidateAntiForgeryToken]
         [Authorize]
         public async Task<IActionResult> Create(RecipeCreateViewModel viewModel) // Sử dụng ViewModel ở đây
-        {
-            if (ModelState.IsValid) // Kiểm tra ModelState của ViewModel
+        {            
+            if (ModelState.IsValid)
             {
                 var recipe = new Recipe
                 {
-                    // Map các thuộc tính từ viewModel sang recipe
                     Title = viewModel.Title,
                     Description = viewModel.Description,
                     PrepTime = viewModel.PrepTime,
@@ -121,8 +125,6 @@ namespace CookShare.Controllers
                     Ingredients = viewModel.Ingredients,
                     Instructions = viewModel.Instructions,
                     VideoUrl = viewModel.VideoUrl,
-
-                    // Gán các giá trị phía server
                     UserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
@@ -144,12 +146,51 @@ namespace CookShare.Controllers
                     recipe.ImageUrl = "/images/recipes/" + fileName;
                 }
 
+                // Thêm recipe vào database
                 _context.Add(recipe);
                 await _context.SaveChangesAsync();
+
+                // Nếu có URL video, tạo bản ghi video mới
+                if (!string.IsNullOrEmpty(viewModel.VideoUrl))
+                {
+                    var video = new Video
+                    {
+                        Title = $"Video hướng dẫn - {recipe.Title}",
+                        Description = $"Video hướng dẫn cho công thức {recipe.Title}",
+                        VideoUrl = viewModel.VideoUrl,
+                        RecipeId = recipe.Id,
+                        UserId = recipe.UserId,
+                        CreatedAt = DateTime.Now
+                    };
+
+                    // Xử lý thumbnail từ YouTube nếu là URL YouTube
+                    if (viewModel.VideoUrl.Contains("youtube.com/watch?v=") || viewModel.VideoUrl.Contains("youtu.be/"))
+                    {
+                        string videoId = "";
+                        if (viewModel.VideoUrl.Contains("youtube.com/watch?v="))
+                        {
+                            videoId = viewModel.VideoUrl.Split("v=")[1].Split('&')[0];
+                        }
+                        else if (viewModel.VideoUrl.Contains("youtu.be/"))
+                        {
+                            videoId = viewModel.VideoUrl.Split('/').Last().Split('?')[0];
+                        }
+
+                        if (!string.IsNullOrEmpty(videoId))
+                        {
+                            // Sử dụng thumbnail của YouTube
+                            video.ThumbnailUrl = $"https://img.youtube.com/vi/{videoId}/maxresdefault.jpg";
+                        }
+                    }
+
+                    // Thêm video vào database
+                    await _videoRepository.AddAsync(video);
+                }
+
                 return RedirectToAction(nameof(MyRecipes));
             }
 
-            // Nếu ModelState không hợp lệ, quay lại view Create với ViewModel và các lỗi
+            // Nếu ModelState không hợp lệ
             ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", viewModel.CategoryId);
             return View(viewModel);
         }
@@ -338,6 +379,20 @@ namespace CookShare.Controllers
         private bool RecipeExists(int id)
         {
             return _context.Recipes.Any(e => e.Id == id);
+        }
+
+        public async Task<IActionResult> Videos(int id)
+        {
+            var videos = await _videoRepository.GetVideosByRecipeAsync(id);
+            var recipe = await _recipeRepository.GetByIdAsync(id);
+
+            if (recipe == null)
+            {
+                return NotFound();
+            }
+
+            ViewBag.Recipe = recipe;
+            return View(videos);
         }
     }
 }

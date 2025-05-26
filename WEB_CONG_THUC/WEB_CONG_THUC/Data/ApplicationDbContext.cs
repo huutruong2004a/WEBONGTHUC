@@ -16,24 +16,48 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<Recipe> Recipes { get; set; }
 
     public DbSet<Video> Videos { get; set; }
+    public DbSet<VideoFavorite> VideoFavorites { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // Cấu hình khóa ngoại để tránh lỗi cascade
+        // Unique constraint cho VideoFavorite
+        modelBuilder.Entity<VideoFavorite>()
+            .HasIndex(vf => new { vf.UserId, vf.VideoId })
+            .IsUnique();
+
+        // Cấu hình khóa ngoại tránh lỗi cascade cycles
+        modelBuilder.Entity<Video>()
+            .HasOne(v => v.User)
+            .WithMany()
+            .HasForeignKey(v => v.UserId)
+            .OnDelete(DeleteBehavior.NoAction); // hoặc DeleteBehavior.Restrict
+
+        modelBuilder.Entity<VideoFavorite>()
+            .HasOne(vf => vf.User)
+            .WithMany()
+            .HasForeignKey(vf => vf.UserId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        modelBuilder.Entity<VideoFavorite>()
+            .HasOne(vf => vf.Video)
+            .WithMany(v => v.Favorites)
+            .HasForeignKey(vf => vf.VideoId)
+            .OnDelete(DeleteBehavior.Cascade); // giữ lại cascade với Video nếu bạn muốn
+
         modelBuilder.Entity<Recipe>()
             .HasOne(r => r.User)
             .WithMany()
             .HasForeignKey(r => r.UserId)
-            .OnDelete(DeleteBehavior.NoAction); // Thay đổi từ Cascade thành NoAction
+            .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<RecipeReview>()
             .HasOne(r => r.User)
             .WithMany()
             .HasForeignKey(r => r.UserId)
-            .OnDelete(DeleteBehavior.NoAction); // Thay đổi từ Cascade thành NoAction
+            .OnDelete(DeleteBehavior.NoAction);
 
-        // Seed Categories
+        // Seed dữ liệu Categories
         modelBuilder.Entity<Category>().HasData(
             new Category { Id = 1, Name = "Bữa sáng" },
             new Category { Id = 2, Name = "Bữa trưa" },
@@ -47,4 +71,5 @@ public class ApplicationDbContext : IdentityDbContext
             new Category { Id = 10, Name = "Món ăn truyền thống" }
         );
     }
+
 }
