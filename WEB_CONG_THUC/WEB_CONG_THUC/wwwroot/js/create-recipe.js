@@ -18,6 +18,10 @@ function initializeEnhancements() {
     const form = document.getElementById("recipeForm")
     if (form) {
         form.addEventListener("submit", (e) => {
+            // Ensure hidden fields are updated before validation
+            updateIngredientsValue_Create();
+            updateInstructionsValue_Create();
+
             if (validateEnhancedForm()) {
                 showLoadingState()
                 // Allow form to submit after showing loading
