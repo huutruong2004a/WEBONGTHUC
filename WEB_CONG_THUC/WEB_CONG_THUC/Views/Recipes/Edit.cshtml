@@ -85,19 +85,19 @@
                             <label asp-for="CategoryId" class="control-label"></label>
                             <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId"></select>
                             <span asp-validation-for="CategoryId" class="text-danger"></span>
-        
+
                         </div>
 
                         <div class="form-group">
                             <label asp-for="VideoUrl" class="control-label"></label>
-    <input asp-for="VideoUrl" class="form-control"
+                            <input asp-for="VideoUrl" class="form-control"
                                 placeholder="Nhập URL video (YouTube, Vimeo...)" />
-                            <span asp-validation-for="VideoUrl" class="text-danger"></span>   
-                                                                                                             
+                            <span asp-validation-for="VideoUrl" class="text-danger"></span>
+
                         </div>
-                        
+
                         <div class="form-group form-check mt-3">
-                            <input type="checkbox" class="form-check-input" asp-for="IsPopular" id="IsPopularCheck"/>
+                            <input type="checkbox" class="form-check-input" asp-for="IsPopular" id="IsPopularCheck" />
                             <label class="form-check-label" asp-for="IsPopular">Công thức nổi bật?</label>
                         </div>
                     </div>
@@ -112,7 +112,7 @@
                                 <button type="button" class="btn btn-outline-success btn-sm mt-2" id="addIngredient">
                                     <i class="fas fa-plus"></i> Thêm nguyên liệu
                                 </button>
-                                <textarea asp-for="Ingredients" class="form-control d-none" 
+                                <textarea asp-for="Ingredients" class="form-control d-none"
                                     id="ingredientsValue">@Model.Ingredients</textarea>
                                 <span asp-validation-for="Ingredients" class="text-danger"></span>
                             </div>
@@ -127,7 +127,7 @@
                                 <button type="button" class="btn btn-outline-success btn-sm mt-2" id="addInstruction">
                                     <i class="fas fa-plus"></i> Thêm bước
                                 </button>
-                                <textarea asp-for="Instructions" class="form-control d-none" 
+                                <textarea asp-for="Instructions" class="form-control d-none"
                                     id="instructionsValue">@Model.Instructions</textarea>
                                 <span asp-validation-for="Instructions" class="text-danger"></span>
                             </div>
@@ -145,14 +145,13 @@
                 </div>
             </form>
         </div>
-</div>
+    </div>
 </section>
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-
     <script>
         // Store initial image URL
         const initialImageUrl = document.getElementById('preview').src;
@@ -171,9 +170,7 @@
             if (file) {
                 reader.readAsDataURL(file);
             } else {
-                // If no file is selected (e.g., user clears the selection),
-                // revert to the initial image loaded with the page.
-                preview.src = initialImageUrl; 
+                preview.src = initialImageUrl;
             }
         }
 
@@ -182,37 +179,56 @@
         const addIngredientBtnEl = document.getElementById('addIngredient');
         const ingredientsValueEl = document.getElementById('ingredientsValue');
 
-                   function          addIngredientItem(value = "") {
-                       cons         t newItem = document.createElement('div');
-                     newItem.           className = 'ingredient-item input-group mb-2';
-                   newI             tem.innerHTML = `
-                                    <input type="text" class="form-control ingredient-input" placeholder="Ví dụ: 200g bột mì" value="${value.replace(/"/g, '&quot;')}" />
-                <button type="button" class="btn btn-outline-danger btn-sm btn-remove-ingredient">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
+        function updateIngredientsValue() {
+            const ingredients = [];
+            ingredientsListEl.querySelectorAll('.ingredient-input').forEach(function (input) {
+                if (input.value.trim() !== '') {
+                    ingredients.push(input.value.trim());
+                }
+            });
+            ingredientsValueEl.value = ingredients.join('\n');
+        }
+
+        function addIngredientItem(value = "") {
+            const newItem = document.createElement('div');
+            newItem.className = 'ingredient-item input-group mb-2';
+            newItem.innerHTML = `
+                    <input type="text" class="form-control ingredient-input" placeholder="Ví dụ: 200g bột mì" value="${value.replace(/"/g, '&quot;')}" />
+                    <button type="button" class="btn btn-outline-danger btn-sm btn-remove-ingredient">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+            // New input is enabled by default
             ingredientsListEl.appendChild(newItem);
             newItem.querySelector('.btn-remove-ingredient').addEventListener('click', function () {
                 ingredientsListEl.removeChild(newItem);
+                updateIngredientsValue();
             });
         }
 
-        addIngredientBtnEl.addEventListener('click', () => addIngredientItem());
+        addIngredientBtnEl.addEventListener('click', () => {
+            addIngredientItem();
+            updateIngredientsValue();
+        });
 
         function loadIngredients() {
-            const rawIngredients = ingredientsValueEl.value.trim();
-            ingredientsListEl.innerHTML = ''; // Clear before loading
-            if (rawIngredients) {
-                const items = rawIngredients.split('\n');
+            const rawIngredientsText = ingredientsValueEl.value.trim();
+            const correctedIngredientsText = rawIngredientsText.replace(/\\n/g, '\n'); // Replace literal \n with actual newline
+            ingredientsListEl.innerHTML = '';
+            if (correctedIngredientsText) {
+                const items = correctedIngredientsText.split('\n');
                 items.forEach(itemText => {
                     if (itemText.trim() !== '') {
                         addIngredientItem(itemText.trim());
-                   }
+                        ingredientsListEl.lastChild.querySelector('.ingredient-input').disabled = false;
+                    }
                 });
             }
             if (ingredientsListEl.children.length === 0) {
-                 addIngredientItem(); // Add one empty if list is empty
+                addIngredientItem();
+                ingredientsListEl.lastChild.querySelector('.ingredient-input').disabled = false;
             }
+            updateIngredientsValue();
         }
 
         // Instructions handling
@@ -228,77 +244,81 @@
             });
         }
 
-        function addInstructionItem(value = "") {
-                         cons       t newItem = document.createElement('div');
-                newI                tem.className = 'instruction-item input-group mb-2';
-                      cons          t stepNumber = instructionsListEl.children.length + 1;
-                           newItem.     innerHTML = `
-                                    <span class="input-group-text instruction-number">${stepNumber}</span>
-                                    <textarea class="form-control instruction-input" rows="2" placeholder="Mô tả bước thực hiện">${value.replace(/"/g, '&quot;').replace(/\n/g, '&#10;')}</textarea>
-                <button type="button" class="btn btn-outline-danger btn-sm btn-remove-instruction">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-            instructionsListEl.appendChild(newItem);
-            newItem.querySelector('.btn-remove-instruction').addEventListener('click', function () {
-                instructionsListEl.removeChild(newItem);
-                updateInstructionNumbers();
-            });
-            updateInstructionNumbers();
-        }
-
-        addInstructionBtnEl.addEventListener('click', () => addInstructionItem());
-
-        function loadInstructions() {
-            const rawInstructions = instructionsValueEl.value.trim();
-            instructionsListEl.innerHTML = ''; // Clear before loading
-            if (rawInstructions) {
-                const items = rawInstructions.split('\n');
-                items.forEach(itemText => {
-                    if (itemText.trim() !== '') {
-                       addInstructionItem(itemText.trim());
-                   }
-                });
-            }
-             if (instructionsListEl.children.length === 0) {
-                 addInstructionItem(); // Add one empty if list is empty
-            }
-          }
-
-        // Prepare form data before submit
-        function prepareSubmit() {
-            var ingredients = [];
-            ingredientsListEl.querySelectorAll('.ingredient-input').forEach(function (input) {
-                if (input.value.trim() !== '') {
-                    ingredients.push(input.value.trim());
-                }
-            });
-            ingredientsValueEl.value = ingredients.join('\n');
-
-            var instructions = [];
+        function updateInstructionsValue() {
+            const instructions = [];
             instructionsListEl.querySelectorAll('.instruction-input').forEach(function (textarea) {
                 if (textarea.value.trim() !== '') {
                     instructions.push(textarea.value.trim());
                 }
             });
             instructionsValueEl.value = instructions.join('\n');
-            return true; 
+        }
+
+        function addInstructionItem(value = "") {
+            const newItem = document.createElement('div');
+            newItem.className = 'instruction-item input-group mb-2';
+            const stepNumber = instructionsListEl.children.length + 1;
+            newItem.innerHTML = `
+                    <span class="input-group-text instruction-number">${stepNumber}</span>
+                    <textarea class="form-control instruction-input" rows="2" placeholder="Mô tả bước thực hiện">${value.replace(/"/g, '&quot;').replace(/\n/g, '&#10;')}</textarea>
+                    <button type="button" class="btn btn-outline-danger btn-sm btn-remove-instruction">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+            instructionsListEl.appendChild(newItem);
+            newItem.querySelector('.instruction-input').disabled = false;
+            newItem.querySelector('.btn-remove-instruction').addEventListener('click', function () {
+                instructionsListEl.removeChild(newItem);
+                updateInstructionNumbers();
+                updateInstructionsValue();
+            });
+            updateInstructionNumbers();
+        }
+
+        addInstructionBtnEl.addEventListener('click', () => {
+            addInstructionItem();
+            updateInstructionsValue();
+        });
+
+        function loadInstructions() {
+            const rawInstructionsText = instructionsValueEl.value.trim();
+            const correctedInstructionsText = rawInstructionsText.replace(/\\n/g, '\n'); // Replace literal \n with actual newline
+            instructionsListEl.innerHTML = '';
+            if (correctedInstructionsText) {
+                const items = correctedInstructionsText.split('\n');
+                items.forEach(itemText => {
+                    if (itemText.trim() !== '') {
+                        addInstructionItem(itemText.trim());
+                        instructionsListEl.lastChild.querySelector('.instruction-input').disabled = false;
+                    }
+                });
+            }
+            if (instructionsListEl.children.length === 0) {
+                addInstructionItem();
+                instructionsListEl.lastChild.querySelector('.instruction-input').disabled = false;
+            }
+            updateInstructionsValue();
+        }
+
+        // Prepare form data before submit
+        function prepareSubmit() {
+            updateIngredientsValue();
+            updateInstructionsValue();
+            return true;
         }
 
         document.getElementById('recipeForm').addEventListener('submit', function (event) {
-      if!prepareSubmit()) {
-                event.preventDefault(); 
+            if (!prepareSubmit()) {
+                event.preventDefault();
             }
         });
 
-            // Load existing data on page load     
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             loadIngredients();
             loadInstructions();
-            
-            // Restore image preview if validation failed and a file was selected
+
             if (document.getElementById('ImageFile').files.length > 0) {
-                 previewImage();
+                previewImage();
             }
         });
     </script>
@@ -313,6 +333,10 @@
         .image-upload-container img {
             border: 1px solid #dee2e6;
             padding: .25rem;
+            max-width: 100%;
+            max-height: 250px;
+            height: auto;
+            border-radius: 4px;
         }
 
         .ingredients-section .input-group,
@@ -322,8 +346,40 @@
 
         .instructions-section .input-group-text {
             min-width: 40px;
-            /* Adjust as needed */
             justify-content: center;
         }
+
+        .recipe-form-section .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .recipe-form-section .section-header h1 {
+            margin-bottom: 0.5rem;
+        }
+
+        .recipe-form-section .section-header p {
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            color: #6c757d;
+        }
+
+        .recipe-form-container {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-upload-container .image-preview {
+            margin-bottom: 0.5rem;
+        }
+
+        .image-upload-container .upload-label {
+            cursor: pointer;
+        }
     </style>
-}                                                                           
+}
+
+
