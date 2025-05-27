@@ -49,7 +49,7 @@
                     @if (!string.IsNullOrEmpty(Model.Ingredients))
                     {
                         <ul>
-                            @foreach (var ingredient in Model.Ingredients.Split('\n',
+                            @foreach (var ingredient in Model.Ingredients.Replace("\\n", "\n").Split('\n',
                                                     StringSplitOptions.RemoveEmptyEntries))
                             {
                                 <li>@ingredient</li>
@@ -68,10 +68,10 @@
                     @if (!string.IsNullOrEmpty(Model.Instructions))
                     {
                         <ol>
-                            @foreach (var instruction in Model.Instructions.Split('\n',
+                            @foreach (var instruction in Model.Instructions.Replace("\\n", "\n").Split('\n',
                                                     StringSplitOptions.RemoveEmptyEntries))
                             {
-                                <li>@Html.Raw(instruction.Replace("\n", "<br />"))</li>
+                                <li>@Html.Raw(instruction)</li> @* It's already a single line, Html.Raw for safety if any HTML was intended in the instruction itself *@
                             }
                         </ol>
                     }
@@ -105,7 +105,7 @@
                             {
                                 <p><a href="@Model.VideoUrl" target="_blank">Xem video</a></p>
                             }
-                            
+
                         </div>
                     }
                 </div>
@@ -209,6 +209,17 @@
             margin-right: 8px;
             color: #5cb85c;
             /* Màu xanh lá cây theme */
+            font-size: 1.2em;
+            /* Make icons a bit larger */
+        }
+
+        .recipe-meta .col-md-4 {
+            padding: 10px;
+            background-color: #f8f9fa;
+            /* Light grey background */
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
         }
 
         .recipe-sidebar {
@@ -230,6 +241,44 @@
             margin-bottom: 1rem;
         }
 
-        
+        /* New styles for enhanced recipe content presentation */
+        .recipe-content h4 {
+            /* For "Nguyên liệu" and "Các bước thực hiện" */
+            font-size: 1.75rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 0.5rem;
+        }
+
+        .recipe-content ul,
+        .recipe-content ol {
+            padding-left: 20px;
+            margin-bottom: 1.5rem;
+        }
+
+        .recipe-content ul li,
+        .recipe-content ol li {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 0.75rem;
+            padding: 10px;
+            /* Increased padding */
+            background-color: #fdfdfd;
+            border-left: 4px solid #5cb85c;
+            /* Accent color border - increased thickness */
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            /* Subtle shadow for depth */
+        }
+
+        /* Ensure description is also well-spaced and readable */
+        .recipe-content>p:first-of-type {
+            /* Targeting the main description paragraph */
+            font-size: 1.1rem;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
     </style>
 }
