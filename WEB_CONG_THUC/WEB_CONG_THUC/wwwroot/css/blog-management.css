@@ -1,0 +1,93 @@
+﻿.manage-blog-container {
+    padding: 2rem;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.page-header {
+    margin-bottom: 2rem;
+    color: #ff6b00;
+}
+
+    .page-header h1 {
+        font-size: 2rem;
+        font-weight: 600;
+    }
+
+.filter-section {
+    background-color: #fff7f2;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #ffe0cc;
+}
+
+.status-filter select {
+    max-width: 200px;
+    border-color: #ff6b00;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-approved {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.action-buttons .btn {
+    margin: 0 2px;
+    border-radius: 4px;
+}
+
+.btn-outline-primary {
+    color: #ff6b00;
+    border-color: #ff6b00;
+}
+
+    .btn-outline-primary:hover {
+        background-color: #ff6b00;
+        color: #fff;
+    }
+
+.table {
+    margin-top: 1rem;
+}
+
+    .table th {
+        background-color: #fff7f2;
+        color: #ff6b00;
+        border-bottom: 2px solid #ff6b00;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+    .table tr:hover {
+        background-color: #fff7f2;
+    }
+
+.text-primary {
+    color: #ff6b00 !important;
+    text-decoration: none;
+}
+
+    .text-primary:hover {
+        color: #e65c00 !important;
+        text-decoration: underline;
+    }

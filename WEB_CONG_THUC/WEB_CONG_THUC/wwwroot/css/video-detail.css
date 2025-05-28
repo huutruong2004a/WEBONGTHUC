@@ -1,0 +1,199 @@
+﻿:root {
+    --primary-color: #ff8036;
+    --primary-light: #fff0e8;
+    --primary-hover: #ff6b00;
+    --text-color: #2d3748;
+    --text-muted: #718096;
+    --gradient-primary: linear-gradient(135deg, #ff8036 0%, #ff6b00 100%);
+}
+
+.video-details {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 5px 20px rgba(255, 128, 54, 0.1);
+}
+
+.video-player-container {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+    .video-player-container::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border: 2px solid var(--primary-color);
+        border-radius: 15px;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .video-player-container:hover::after {
+        opacity: 1;
+    }
+
+.video-info {
+    padding: 25px 0;
+    border-bottom: 2px solid var(--primary-light);
+}
+
+    .video-info h1 {
+        color: var(--text-color);
+        font-size: 2rem;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+.video-meta {
+    display: flex;
+    gap: 20px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+}
+
+    .video-meta span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .video-meta i {
+        color: var(--primary-color);
+    }
+
+.btn-favorite {
+    background: var(--primary-light);
+    color: var(--primary-color);
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+    .btn-favorite:hover {
+        background: var(--gradient-primary);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-favorite.active {
+        background: var(--gradient-primary);
+        color: white;
+    }
+
+/* Comments Section */
+.comments-section {
+    margin-top: 30px;
+    padding: 25px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(255, 128, 54, 0.1);
+}
+
+.comment-form-container {
+    background: var(--primary-light);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+}
+
+.comment-form textarea {
+    border: 2px solid transparent;
+    border-radius: 10px;
+    padding: 15px;
+    transition: all 0.3s ease;
+}
+
+    .comment-form textarea:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(255, 128, 54, 0.1);
+    }
+
+.comment-form button {
+    background: var(--gradient-primary);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+    .comment-form button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 128, 54, 0.3);
+    }
+
+.comment-item {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    border: 1px solid var(--primary-light);
+    transition: all 0.3s ease;
+}
+
+    .comment-item:hover {
+        transform: translateX(5px);
+        border-color: var(--primary-color);
+    }
+
+/* Related Videos */
+.related-videos {
+    margin-top: 30px;
+}
+
+.related-video-item {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+    .related-video-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(255, 128, 54, 0.15);
+    }
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.video-details {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Loading State */
+.loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 128, 54, 0.1), transparent);
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}

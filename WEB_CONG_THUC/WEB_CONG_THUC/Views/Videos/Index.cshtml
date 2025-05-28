@@ -1,101 +1,98 @@
 ﻿@model IEnumerable<Video>
+@{
+    ViewData["Title"] = "Thư viện Video";
+    int pageSize = 6; // Số video trên mỗi trang
+    int pageNumber = Convert.ToInt32(ViewBag.Page ?? 1);
+    var videos = Model.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+}
 
-<div class="container">
-    @* <div class="section-header">
-        <h2>Thư viện Video</h2>
-        <p>Khám phá các video hướng dẫn nấu ăn</p>
-    </div> *@
-    @if (ViewBag.CurrentRecipe != null)
-    {
-        <div class="recipe-header mb-4">
-            <h2>Video hướng dẫn cho công thức: @ViewBag.CurrentRecipe.Title</h2>
-            <a asp-controller="Recipes"
-               asp-action="Details"
-               asp-route-id="@ViewBag.CurrentRecipe.Id"
-               class="btn btn-outline-primary">
-                <i class="fas fa-arrow-left"></i> Quay lại công thức
-            </a>
+<div class="container py-4">
+    <!-- Phần filters -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="section-title">Thư viện Video</h2>
+            <p class="text-muted">Khám phá các video hướng dẫn nấu ăn</p>
         </div>
-    }
-
-    <div class="filters mb-4">
-        <form asp-action="Index" method="get" id="searchForm">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label for="recipeId" class="form-label">Công thức</label>
+        <div class="col-md-4">
+            <form asp-action="Index" method="get" id="searchForm">
+                <div class="input-group">
                     <select name="recipeId" id="recipeId" class="form-select">
                         <option value="">Tất cả công thức</option>
                         @foreach (var recipe in ViewBag.Recipes)
                         {
-                            var selected = Context.Request.Query["recipeId"] == recipe.Value ? "selected" : "";
-                            @Html.Raw($"<option value=\"{recipe.Value}\" {selected}>{recipe.Text}</option>")
+                            <option value="@recipe.Value" selected="@(Context.Request.Query["recipeId"] == recipe.Value)">
+                                @recipe.Text
+                            </option>
                         }
                     </select>
+                    <input type="text" class="form-control" name="searchString"
+                           placeholder="Tìm kiếm..." value="@Context.Request.Query["searchString"]">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
                 </div>
-                <div class="col-md-6">
-                    <label for="searchString" class="form-label">Tìm kiếm</label>
-                    <input type="text" class="form-control" id="searchString"
-                           name="searchString" value="@Context.Request.Query["searchString"]"
-                           placeholder="Nhập từ khóa tìm kiếm...">
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">&nbsp;</label>
-                    <div>
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="fas fa-search"></i> Tìm kiếm
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 
     @if (!Model.Any())
     {
-        <div class="alert alert-info">                        
-            @if (ViewBag.CurrentRecipe != null)
-            {
-                <h3>Chưa có video nào cho công thức này.</h3>
-            }
-            else
-            {
-
-                <i class="fas fa-info-circle"></i>
-                <h3>Không tìm thấy video nào phù hợp.</h3>                            
-            }
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle fa-2x mb-3"></i>
+            <h4>Không tìm thấy video</h4>
+            <p class="mb-0">@(ViewBag.CurrentRecipe != null ? "Chưa có video nào cho công thức này." : "Không tìm thấy video phù hợp.")</p>
         </div>
     }
     else
     {
-        <div class="video-grid">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             @foreach (var video in Model)
             {
-                <div class="video-card" data-recipe-id="@video.RecipeId">
-                    <div class="video-thumbnail">
-                        <img src="@video.ThumbnailUrl" alt="@video.Title" />
-                        <a href="@Url.Action("Details", new { id = video.Id })" class="play-button">
-                            <i class="fas fa-play"></i>
-                        </a>
-                    </div>
-                    <div class="video-info">
-                        <h3>@video.Title</h3>
-                        <p>@video.Description</p>
-                        @if (video.Recipe != null)
-                        {
-                            <div class="recipe-link">
-                                <i class="fas fa-utensils"></i>
-                                <a asp-controller="Recipes" asp-action="Details"
-                                   asp-route-id="@video.RecipeId">
-                                    @video.Recipe.Title
-                                </a>
+                <div class="col">
+                    <div class="video-card h-100 shadow-sm">
+                        <div class="video-thumbnail position-relative">
+                            <img src="@video.ThumbnailUrl" alt="@video.Title" class="w-100 rounded-top" />
+                            <a href="@Url.Action("Details", new { id = video.Id })"
+                               class="play-overlay d-flex align-items-center justify-content-center">
+                                <div class="play-button-wrapper">
+                                    <div class="play-button">
+                                        <i class="fas fa-play"></i>
+                                    </div>
+                                    <div class="pulse"></div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="video-info p-3">
+                            <h5 class="video-title">
+                                <a href="@Url.Action("Details", new { id = video.Id })"
+                                   class="text-decoration-none text-dark">@video.Title</a>
+                            </h5>
+                            <p class="video-description text-muted">
+                                @(video.Description?.Length > 100 ? video.Description.Substring(0, 100) + "..." : video.Description)
+                            </p>
+                            @if (video.Recipe != null)
+                            {
+                                <div class="recipe-link mb-3">
+                                    <i class="fas fa-utensils text-success"></i>
+                                    <a asp-controller="Recipes" asp-action="Details"
+                                       asp-route-id="@video.RecipeId" class="text-decoration-none ms-2">
+                                        @video.Recipe.Title
+                                    </a>
+                                </div>
+                            }
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="views">
+                                    <i class="fas fa-eye text-primary"></i>
+                                    <span class="ms-1">@video.ViewCount lượt xem</span>
+                                </span>
+                                @if (User.Identity?.IsAuthenticated ?? false)
+                                {
+                                    <button class="btn-favorite bg-transparent border-0 @(ViewBag.UserFavorites?.Contains(video.Id) ?? false ? "active" : "")"
+                                            data-video-id="@video.Id">
+                                        <i class="fas fa-heart"></i>
+                                    </button>
+                                }
                             </div>
-                        }
-                        <div class="video-meta">
-                            <span><i class="fas fa-eye"></i> @video.ViewCount xem</span>
-                            <button class="btn-favorite @(ViewBag.UserFavorites?.Contains(video.Id) ?? false ? "active" : "")"
-                                    data-video-id="@video.Id">
-                                <i class="fas fa-heart"></i>
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -104,48 +101,37 @@
     }
 </div>
 
-@section Styles {
-    <style>
-        .recipe-link {
-            margin: 10px 0;
-            padding: 5px 10px;
-            background-color: #f8f9fa;
-            border-radius: 4px;
-        }
-
-            .recipe-link i {
-                color: #28a745;
-                margin-right: 5px;
-            }
-
-        .filters {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-        }
-    </style>
-}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="~/css/video.css" rel="stylesheet" />
 
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('searchForm');
-            const recipeSelect = document.getElementById('recipeId');
-            const searchInput = document.getElementById('searchString');
-
-            // Tự động submit form khi thay đổi công thức
-            recipeSelect.addEventListener('change', function() {
-                form.submit();
+            // Auto-submit form when recipe selection changes
+            document.getElementById('recipeId')?.addEventListener('change', function() {
+                document.getElementById('searchForm').submit();
             });
 
-            // Debounce function cho tìm kiếm
-            let timeout;
-            searchInput.addEventListener('input', function() {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => {
-                    form.submit();
-                }, 500);
+            // Handle favorite button clicks
+            document.querySelectorAll('.btn-favorite').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const videoId = this.dataset.videoId;
+                    try {
+                        const response = await fetch(`/Videos/ToggleFavorite/${videoId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (response.ok) {
+                            this.classList.toggle('active');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                });
             });
         });
     </script>
