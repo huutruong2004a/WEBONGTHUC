@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WEB_CONG_THUC.Data;
 
@@ -11,9 +12,11 @@ using WEB_CONG_THUC.Data;
 namespace WEB_CONG_THUC.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250528135506_CommentForVideos")]
+    partial class CommentForVideos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -463,22 +466,12 @@ namespace WEB_CONG_THUC.Data.Migrations
                     b.Property<int?>("RecipeId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Slug")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
                     b.Property<string>("ThumbnailUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UploadType")
-                        .HasColumnType("int");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -683,7 +676,7 @@ namespace WEB_CONG_THUC.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("WEB_CONG_THUC.Models.Video", "Video")
-                        .WithMany("Comments")
+                        .WithMany()
                         .HasForeignKey("VideoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -724,8 +717,6 @@ namespace WEB_CONG_THUC.Data.Migrations
 
             modelBuilder.Entity("WEB_CONG_THUC.Models.Video", b =>
                 {
-                    b.Navigation("Comments");
-
                     b.Navigation("Favorites");
                 });
 #pragma warning restore 612, 618

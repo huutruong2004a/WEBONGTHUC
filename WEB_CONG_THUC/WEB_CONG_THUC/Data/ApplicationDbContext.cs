@@ -17,6 +17,7 @@ public class ApplicationDbContext : IdentityDbContext
 
     public DbSet<Video> Videos { get; set; }
     public DbSet<VideoFavorite> VideoFavorites { get; set; }
+    public DbSet<VideoComment> VideoComments { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
