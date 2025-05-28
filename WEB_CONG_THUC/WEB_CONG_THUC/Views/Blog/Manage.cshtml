@@ -4,92 +4,128 @@
     ViewData["Title"] = "Quản lý bài đăng";
 }
 
-<h1>Quản lý bài đăng</h1>
+<div class="manage-blog-container">
+    <div class="page-header">
+        <h1><i class="fas fa-tasks"></i> Quản lý bài đăng</h1>
+    </div>
 
-<div class="mb-3">
-    <form asp-action="Manage" method="get">
-        <label for="status">Lọc theo trạng thái:</label>
-        <select name="status" id="status" onchange="this.form.submit()">
-            <option value="All" selected="@(ViewBag.FilterStatus == "All")">Tất cả</option>
-            <option value="Pending" selected="@(ViewBag.FilterStatus == "Pending")">Chờ duyệt</option>
-            <option value="Approved" selected="@(ViewBag.FilterStatus == "Approved")">Đã duyệt</option>
-            <option value="Rejected" selected="@(ViewBag.FilterStatus == "Rejected")">Không duyệt</option>
-        </select>
-    </form>
+    <div class="filter-section mb-4">
+        <form asp-action="Manage" method="get" class="status-filter">
+            <label for="status" class="form-label">
+                <i class="fas fa-filter"></i> Lọc theo trạng thái:
+            </label>
+            <select name="status" id="status" class="form-select" onchange="this.form.submit()">
+                <option value="All" selected="@(ViewBag.FilterStatus == "All")">Tất cả</option>
+                <option value="Pending" selected="@(ViewBag.FilterStatus == "Pending")">Chờ duyệt</option>
+                <option value="Approved" selected="@(ViewBag.FilterStatus == "Approved")">Đã duyệt</option>
+                <option value="Rejected" selected="@(ViewBag.FilterStatus == "Rejected")">Không duyệt</option>
+            </select>
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Tiêu đề</th>
+                    <th>Ngày tạo</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var blog in Model)
+                {
+                    <tr>
+                        <td>
+                            @if (blog.Status == WEB_CONG_THUC.Models.BlogStatus.Pending)
+                            {
+                                <a asp-action="Preview" asp-route-id="@blog.Id" class="text-primary">
+                                    <i class="fas fa-file-alt"></i> @blog.Title
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-action="Details" asp-route-slug="@blog.Slug" class="text-primary">
+                                    <i class="fas fa-file-alt"></i> @blog.Title
+                                </a>
+                            }
+                        </td>
+                        <td>
+                            <i class="far fa-calendar-alt"></i>
+                            @blog.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                        </td>
+                        <td>
+                            @{
+                                var statusClass = blog.Status switch
+                                {
+                                    WEB_CONG_THUC.Models.BlogStatus.Pending => "status-pending",
+                                    WEB_CONG_THUC.Models.BlogStatus.Approved => "status-approved",
+                                    WEB_CONG_THUC.Models.BlogStatus.Rejected => "status-rejected",
+                                    _ => ""
+                                };
+                            }
+                            <span class="status-badge @statusClass">@blog.Status</span>
+                        </td>
+                        <td class="action-buttons">
+                            <div class="btn-group">
+                                <a asp-action="Edit" asp-route-id="@blog.Id"
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                @if (blog.Status == WEB_CONG_THUC.Models.BlogStatus.Pending)
+                                {
+                                    <form asp-action="Approve" asp-route-id="@blog.Id" method="post" class="d-inline">
+                                        <input type="hidden" name="id" value="@blog.Id" />
+                                        <button type="submit" class="btn btn-outline-success btn-sm">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </form>
+                                    <form asp-action="Reject" asp-route-id="@blog.Id" method="post" class="d-inline">
+                                        <input type="hidden" name="id" value="@blog.Id" />
+                                        <button type="submit" class="btn btn-outline-warning btn-sm">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </form>
+                                    <a asp-action="Preview" asp-route-id="@blog.Id"
+                                       class="btn btn-outline-info btn-sm">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                }
+                                <form asp-action="Delete" asp-route-id="@blog.Id" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@blog.Id" />
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Tiêu đề</th>
-            <th>Ngày tạo</th>
-            <th>Trạng thái</th>
-            <th>Hành động</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var blog in Model)
-        {
-            <tr>
-                <td>
-                    @if (blog.Status == WEB_CONG_THUC.Models.BlogStatus.Pending)
-                    {
-                        <a asp-action="Preview" asp-route-id="@blog.Id">@blog.Title</a>
-                    }
-                    else
-                    {
-                        <a asp-action="Details" asp-route-slug="@blog.Slug">@blog.Title</a>
-                    }
-                </td>
-                <td>@blog.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
-                <td>@blog.Status</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@blog.Id" class="btn btn-primary btn-sm">Chỉnh sửa</a>
-                    <form asp-action="Delete" asp-route-id="@blog.Id" method="post" style="display:inline;">
-                        <input type="hidden" name="id" value="@blog.Id" />
-                        <button type="submit" class="btn btn-danger btn-sm">Xóa</button>
-                    </form>
-                    @if (blog.Status == WEB_CONG_THUC.Models.BlogStatus.Pending)
-                    {
-                        <form asp-action="Approve" asp-route-id="@blog.Id" method="post" style="display:inline;">
-                            <input type="hidden" name="id" value="@blog.Id" />
-                            <button type="submit" class="btn btn-success btn-sm">Duyệt</button>
-                        </form>
-                        <form asp-action="Reject" asp-route-id="@blog.Id" method="post" style="display:inline;">
-                            <input type="hidden" name="id" value="@blog.Id" />
-                            <button type="submit" class="btn btn-warning btn-sm">Từ chối</button>
-                        </form>
-                        <!-- Trong vòng lặp hiển thị danh sách bài viết -->
-                        <a asp-action="Preview" asp-route-id="@blog.Id" class="btn btn-info btn-sm">
-                            <i class="fas fa-eye"></i> Xem trước
-                        </a>
-                    }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+<link href="~/css/blog-management.css" rel="stylesheet" />
 
 @section Scripts {
     <script>
-        // Xác nhận trước khi duyệt/từ chối/xóa
-        document.querySelectorAll('form[action*="Approve"]').forEach(form => {
+        // Xác nhận các hành động
+        document.querySelectorAll('form').forEach(form => {
             form.addEventListener('submit', (e) => {
-                if (!confirm('Bạn có chắc muốn duyệt bài đăng này?')) {
-                    e.preventDefault();
+                const action = form.getAttribute('action').toLowerCase();
+                let message = '';
+
+                if (action.includes('approve')) {
+                    message = 'Bạn có chắc muốn duyệt bài đăng này?';
+                } else if (action.includes('reject')) {
+                    message = 'Bạn có chắc muốn từ chối bài đăng này?';
+                } else if (action.includes('delete')) {
+                    message = 'Bạn có chắc muốn xóa bài đăng này?';
                 }
-            });
-        });
-        document.querySelectorAll('form[action*="Reject"]').forEach(form => {
-            form.addEventListener('submit', (e) => {
-                if (!confirm('Bạn có chắc muốn từ chối bài đăng này?')) {
-                    e.preventDefault();
-                }
-            });
-        });
-        document.querySelectorAll('form[action*="Delete"]').forEach(form => {
-            form.addEventListener('submit', (e) => {
-                if (!confirm('Bạn có chắc muốn xóa bài đăng này?')) {
+
+                if (message && !confirm(message)) {
                     e.preventDefault();
                 }
             });

@@ -3,11 +3,11 @@
     ViewData["Title"] = Model.Title;
 }
 
-<div class="container">
-    <div class="video-details">
-        <div class="row">
-            <div class="col-md-8">
-                <!-- Phần video chính -->
+<div class="container py-4">
+    <div class="row">
+        <!-- Video Player Section -->
+        <div class="col-lg-8">
+            <div class="video-player-section bg-white rounded-3 shadow-sm p-3">
                 <div class="video-player-container mb-4">
                     @{
                         string videoId = "";
@@ -22,168 +22,201 @@
                     }
                     @if (!string.IsNullOrEmpty(videoId))
                     {
-                        <div class="ratio ratio-16x9">
+                        <div class="ratio ratio-16x9 rounded-3 overflow-hidden shadow">
                             <iframe src="https://www.youtube.com/embed/@videoId"
                                     title="@Model.Title"
                                     frameborder="0"
+                                    class="rounded-3"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     allowfullscreen>
                             </iframe>
                         </div>
                     }
-                    else
-                    {
-                        <div class="alert alert-warning">
-                            Video không khả dụng. <a href="@Model.VideoUrl" target="_blank">Xem tại đây</a>
-                        </div>
-                    }
                 </div>
 
-                <!-- Thông tin video -->
-                <div class="video-info">
-                    <h1>@Model.Title</h1>
-                    <div class="video-meta">
-                        <span><i class="fas fa-eye"></i> @Model.ViewCount lượt xem</span>
-                        <span><i class="fas fa-calendar"></i> @Model.CreatedAt.ToString("dd/MM/yyyy")</span>
+                <!-- Video Info -->
+                <div class="video-info border-bottom pb-3">
+                    <h1 class="h2 mb-3">@Model.Title</h1>
+                    <div class="d-flex flex-wrap align-items-center text-muted mb-3">
+                        <span class="me-4">
+                            <i class="fas fa-eye text-primary"></i>
+                            <span class="ms-1">@Model.ViewCount lượt xem</span>
+                        </span>
+                        <span class="me-4">
+                            <i class="fas fa-calendar-alt text-success"></i>
+                            <span class="ms-1">@Model.CreatedAt.ToString("dd/MM/yyyy")</span>
+                        </span>
                         @if (Model.User != null)
                         {
-                            <span><i class="fas fa-user"></i> @Model.User.UserName</span>
+                            <span>
+                                <i class="fas fa-user text-info"></i>
+                                <span class="ms-1">@Model.User.UserName</span>
+                            </span>
+                        }
+                        @if (User.Identity!.IsAuthenticated)
+                        {
+                            <button class="btn btn-outline-danger ms-auto btn-favorite @(ViewBag.IsFavorited ? "active" : "")"
+                                    data-video-id="@Model.Id">
+                                <i class="fas fa-heart"></i>
+                                <span class="ms-1">Yêu thích</span>
+                            </button>
                         }
                     </div>
+                    <div class="video-description">
+                        <h5 class="text-primary mb-2">Mô tả</h5>
+                        <p class="text-muted">@Model.Description</p>
+                    </div>
+                </div>
 
-                    @if (User.Identity!.IsAuthenticated)
+                <!-- Comments Section -->
+                <div class="comments-section mt-4">
+                    <h3 class="h4 mb-4">
+                        <i class="fas fa-comments text-primary"></i>
+                        Bình luận (@Model.Comments?.Count)
+                    </h3>
+
+                    @if (User.Identity?.IsAuthenticated ?? false)
                     {
-                        <button class="btn-favorite @(ViewBag.IsFavorited ? "active" : "")"
-                                data-video-id="@Model.Id">
-                            <i class="fas fa-heart"></i> Yêu thích
-                        </button>
+                        <div class="comment-form-container bg-light p-3 rounded-3 mb-4">
+                            <form asp-action="AddComment" method="post" class="comment-form">
+                                <input type="hidden" name="videoId" value="@Model.Id" />
+                                <div class="form-group">
+                                    <textarea name="content" class="form-control border-0 shadow-sm"
+                                              rows="3" placeholder="Chia sẻ suy nghĩ của bạn..." required></textarea>
+                                </div>
+                                <div class="text-end mt-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane"></i>
+                                        Gửi bình luận
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="login-prompt text-center bg-light p-4 rounded-3 mb-4">
+                            <i class="fas fa-user-circle fa-3x text-primary mb-3"></i>
+                            <p class="mb-3">Đăng nhập để tham gia bình luận</p>
+                            <a asp-area="Identity" asp-page="/Account/Login"
+                               asp-route-returnUrl="@Url.Action("Details", new { id = Model.Id })"
+                               class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt"></i>
+                                Đăng nhập
+                            </a>
+                        </div>
                     }
 
-                    <div class="video-description mt-4">
-                        <h4>Mô tả</h4>
-                        <p>@Model.Description</p>
+                    <div class="comments-list">
+                        @if (Model.Comments != null && Model.Comments.Any())
+                        {
+                            foreach (var comment in Model.Comments.OrderByDescending(c => c.CreatedAt))
+                            {
+                                <div class="comment-item bg-light p-3 rounded-3 mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-user-circle fa-2x text-primary"></i>
+                                            <div class="ms-2">
+                                                <div class="fw-bold">@comment.User?.UserName</div>
+                                                <small class="text-muted">
+                                                    @{
+                                                        var timeAgo = DateTime.Now - comment.CreatedAt;
+                                                        string timeDisplay = timeAgo.Days switch
+                                                        {
+                                                            0 when timeAgo.Hours > 0 => $"{timeAgo.Hours} giờ trước",
+                                                            0 => "Vừa xong",
+                                                            1 => "Hôm qua",
+                                                            _ => comment.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                                        };
+                                                    }
+                                                    @timeDisplay
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="comment-content">
+                                        @comment.Content
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="no-comments text-center py-5">
+                                <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">Chưa có bình luận nào. Hãy là người đầu tiên bình luận!</p>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="col-md-4">
-                <!-- Thông tin công thức liên quan -->
-                @if (Model.Recipe != null)
-                {
-                    <div class="related-recipe">
-                        <h4>Công thức liên quan</h4>
-                        <div class="card">
-                            @if (!string.IsNullOrEmpty(Model.Recipe.ImageUrl))
-                            {
-                                <img src="@Model.Recipe.ImageUrl" class="card-img-top" alt="@Model.Recipe.Title">
-                            }
-                            <div class="card-body">
-                                <h5 class="card-title">@Model.Recipe.Title</h5>
-                                <p class="card-text">@Model.Recipe.Description</p>
-                                <a asp-controller="Recipes"
-                                   asp-action="Details"
-                                   asp-route-id="@Model.Recipe.Id"
-                                   class="btn btn-primary">
-                                    Xem công thức
-                                </a>
-                            </div>
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            @if (Model.Recipe != null)
+            {
+                <div class="related-recipe bg-white rounded-3 shadow-sm p-3 mb-4">
+                    <h4 class="h5 mb-3 text-primary">
+                        <i class="fas fa-utensils"></i>
+                        Công thức liên quan
+                    </h4>
+                    <div class="card border-0 shadow-sm">
+                        @if (!string.IsNullOrEmpty(Model.Recipe.ImageUrl))
+                        {
+                            <img src="@Model.Recipe.ImageUrl" class="card-img-top rounded-top" alt="@Model.Recipe.Title">
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title">@Model.Recipe.Title</h5>
+                            <p class="card-text text-muted">@Model.Recipe.Description</p>
+                            <a asp-controller="Recipes" asp-action="Details"
+                               asp-route-id="@Model.Recipe.Id"
+                               class="btn btn-outline-primary w-100">
+                                <i class="fas fa-book-open"></i>
+                                Xem công thức
+                            </a>
                         </div>
                     </div>
-                }
+                </div>
+            }
 
-                <!-- Video liên quan -->
-                @if (ViewBag.RelatedVideos != null)
-                {
-                    <div class="related-videos mt-4">
-                        <h4>Video liên quan</h4>
-                        @foreach (var relatedVideo in ViewBag.RelatedVideos)
-                        {
-                            <div class="related-video-item">
-                                <a asp-action="Details" asp-route-id="@relatedVideo.Id">
-                                    <div class="thumbnail">
-                                        <img src="@relatedVideo.ThumbnailUrl" alt="@relatedVideo.Title">
+            @if (ViewBag.RelatedVideos != null)
+            {
+                <div class="related-videos bg-white rounded-3 shadow-sm p-3">
+                    <h4 class="h5 mb-3 text-primary">
+                        <i class="fas fa-video"></i>
+                        Video liên quan
+                    </h4>
+                    @foreach (var relatedVideo in ViewBag.RelatedVideos)
+                    {
+                        <div class="related-video-item mb-3">
+                            <a asp-action="Details" asp-route-id="@relatedVideo.Id"
+                               class="text-decoration-none">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0 position-relative">
+                                        <img src="@relatedVideo.ThumbnailUrl" alt="@relatedVideo.Title"
+                                             class="rounded" style="width: 120px; height: 68px; object-fit: cover;">
+                                        <div class="play-icon">
+                                            <i class="fas fa-play"></i>
+                                        </div>
                                     </div>
-                                    <div class="info">
-                                        <h6>@relatedVideo.Title</h6>
-                                        <span>@relatedVideo.ViewCount lượt xem</span>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-1 text-dark">@relatedVideo.Title</h6>
+                                        <small class="text-muted">
+                                            <i class="fas fa-eye"></i> @relatedVideo.ViewCount lượt xem
+                                        </small>
                                     </div>
-                                </a>
-                            </div>
-                        }
-                    </div>
-                }
-            </div>
+                                </div>
+                            </a>
+                        </div>
+                    }
+                </div>
+            }
         </div>
     </div>
 </div>
 
-@section Styles {
-    <style>
-        .video-details {
-            padding: 20px 0;
-        }
-
-        .video-meta {
-            color: #666;
-            margin: 10px 0;
-        }
-
-            .video-meta span {
-                margin-right: 20px;
-            }
-
-            .video-meta i {
-                margin-right: 5px;
-            }
-
-        .btn-favorite {
-            background: none;
-            border: 1px solid #dc3545;
-            color: #dc3545;
-            padding: 5px 15px;
-            border-radius: 20px;
-            transition: all 0.3s ease;
-        }
-
-            .btn-favorite.active {
-                background: #dc3545;
-                color: white;
-            }
-
-        .related-video-item {
-            margin-bottom: 15px;
-            border-radius: 8px;
-            overflow: hidden;
-            transition: transform 0.3s ease;
-        }
-
-            .related-video-item:hover {
-                transform: translateY(-3px);
-            }
-
-            .related-video-item .thumbnail img {
-                width: 100%;
-                height: 120px;
-                object-fit: cover;
-            }
-
-            .related-video-item .info {
-                padding: 10px;
-                background: #f8f9fa;
-            }
-
-                .related-video-item .info h6 {
-                    margin: 0;
-                    font-size: 0.9rem;
-                    color: #333;
-                }
-
-                .related-video-item .info span {
-                    font-size: 0.8rem;
-                    color: #666;
-                }
-    </style>
-}
+<link href="~/css/video-detail.css" rel="stylesheet" />
 
 @section Scripts {
     <script>

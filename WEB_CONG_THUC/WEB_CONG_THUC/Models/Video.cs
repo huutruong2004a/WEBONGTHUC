@@ -7,6 +7,15 @@ using WEB_CONG_THUC.Models;
 
 namespace WEB_CONG_THUC.Models
 {
+    public enum VideoStatus
+    {
+        [Display(Name = "Chờ duyệt")]
+        Pending,
+        [Display(Name = "Đã duyệt")]
+        Approved,
+        [Display(Name = "Từ chối")]
+        Rejected
+    }
     public class Video
     {
         public int Id { get; set; }
@@ -19,9 +28,16 @@ namespace WEB_CONG_THUC.Models
         [Display(Name = "Mô tả")]
         public string Description { get; set; } = string.Empty;
 
+        [Display(Name = "Loại upload")]
+        public VideoUploadType UploadType { get; set; }
+
         [Required(ErrorMessage = "Vui lòng nhập URL video")]
         [Display(Name = "URL Video")]
         public string VideoUrl { get; set; } = string.Empty;
+
+        [NotMapped]
+        [Display(Name = "File Video")]
+        public IFormFile? VideoFile { get; set; }
 
         [Display(Name = "Hình thu nhỏ")]
         public string? ThumbnailUrl { get; set; }
@@ -42,5 +58,16 @@ namespace WEB_CONG_THUC.Models
         public int ViewCount { get; set; } = 0;
 
         public virtual ICollection<VideoFavorite> Favorites { get; set; } = new List<VideoFavorite>();
+
+        public virtual ICollection<VideoComment> Comments { get; set; } = new HashSet<VideoComment>();
+        public string Slug { get; set; } = string.Empty;
+        public VideoStatus Status { get; set; } = VideoStatus.Pending;
+    }
+    public enum VideoUploadType
+    {
+        [Display(Name = "URL")]
+        Url,
+        [Display(Name = "File")]
+        File
     }
 }
