@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CookShare</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <nav class="main-nav">
+                <div class="logo">
+                    <i class="fas fa-utensils"></i>
+                    <span>CookShare</span>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="/" class="active">Trang chủ</a></li>
+                    <li><a href="/recipes">Công thức</a></li>
+                    <li><a href="/blog">Blog</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-controller="Videos" asp-action="Index">Video</a>
+                    </li>
+                    <li><a href="/about">Về chúng tôi</a></li>
+                </ul>
+                <div class="nav-actions">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Tìm công thức..." />
+                    </div>
+                    <div class="user-menu">
+                        <partial name="_LoginPartial" />
+                    </div>
+                    <button class="mobile-menu-btn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main role="main">
+        @RenderBody()
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-utensils"></i>
+                    <span>CookShare</span>
+                </div>
+                <p class="copyright">© 2023 CookShare. Đã đăng ký bản quyền.</p>
+                <div class="footer-links">
+                    <a href="#">Điều khoản</a>
+                    <a href="#">Chính sách</a>
+                    <a href="#">Liên hệ</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>

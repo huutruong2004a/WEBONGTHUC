@@ -2,25 +2,64 @@
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 
-<ul class="navbar-nav">
-@if (SignInManager.IsSignedIn(User))
-{
-    <li class="nav-item">
-        <a  class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity?.Name!</a>
-    </li>
-    <li class="nav-item">
-        <form  class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-            <button  type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-        </form>
-    </li>
-}
-else
-{
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
-    </li>
-}
-</ul>
+<div class="user-nav">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <div class="user-dropdown">
+            <button class="user-dropdown-btn">
+                <img src="/images/user-avatar.jpg" alt="User Avatar" class="user-avatar" />
+                <span>@User.Identity?.Name</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="user-dropdown-content">
+                <a asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
+                    <i class="fas fa-user-cog"></i> Tài khoản
+                </a>
+                <a asp-controller="Recipes" asp-action="MyRecipes">
+                    <i class="fas fa-book-open"></i> Công thức của tôi
+                </a>
+                <a href="/recipes/favorites">
+                    <i class="fas fa-heart"></i> Yêu thích
+                </a>
+                <a href="/Blog/Create">
+                    <i class="fas fa-pen"></i> Đăng Blog
+                </a>
+                <a class="dropdown-item" asp-controller="Videos" asp-action="Create">
+                    <i class="fas fa-video"></i> Tạo video
+                </a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <div class="dropdown-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-cogs"></i> Quản lý
+                        </a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" asp-controller="Blog" asp-action="Manage">
+                                <i class="fas fa-blog"></i> Quản lý Blog
+                            </a>
+                            <a class="dropdown-item" asp-controller="Videos" asp-action="Manage">
+                                <i class="fas fa-video"></i> Quản lý Video
+                            </a>                            
+                            <a class="dropdown-item" asp-area="Admin" asp-page="/UserManagement">
+                                <i class="fas fa-users-cog"></i> Quản lý người dùng
+                            </a>
+                        </div>
+                    </div>
+                }
+                <div class="dropdown-divider"></div>
+                <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                    <button type="submit" class="dropdown-logout">
+                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                    </button>
+                </form>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="auth-buttons">
+            <a class="btn btn-outline" asp-area="Identity" asp-page="/Account/Login">Đăng nhập</a>
+            <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Register">Đăng ký</a>
+        </div>
+    }
+</div>
