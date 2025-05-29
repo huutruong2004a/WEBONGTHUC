@@ -96,6 +96,15 @@
                                        class="btn btn-sm btn-info" data-bs-toggle="tooltip" title="Xem">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    <!-- Thêm nút xóa -->
+                                    <form asp-action="Delete" method="post" class="d-inline">
+                                        <input type="hidden" name="id" value="@video.Id" />
+                                        <button type="submit" class="btn btn-sm btn-danger"
+                                                data-bs-toggle="tooltip" title="Xóa"
+                                                onclick="return confirm('Bạn có chắc chắn muốn xóa video này?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -126,6 +135,8 @@
                     message = 'Bạn có chắc muốn duyệt video này?';
                 } else if (action.includes('reject')) {
                     message = 'Bạn có chắc muốn từ chối video này?';
+                } else if (action.includes('delete')) {
+                    message = 'Bạn có chắc muốn xóa video này? Hành động này không thể hoàn tác!';
                 }
 
                 if (message && !confirm(message)) {

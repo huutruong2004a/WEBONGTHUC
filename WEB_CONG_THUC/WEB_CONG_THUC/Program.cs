@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using WEB_CONG_THUC.Data;
 using WEB_CONG_THUC.Extensions.CollectionExtensions;
@@ -50,6 +52,23 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.CategoryServices();
 
 builder.Services.BlogServices();
+
+builder.Services.Configure<IISServerOptions>(options =>
+{
+    options.MaxRequestBodySize = int.MaxValue; // hoặc một giá trị cụ thể như 100_000_000
+});
+
+builder.Services.Configure<KestrelServerOptions>(options =>
+{
+    options.Limits.MaxRequestBodySize = int.MaxValue; // hoặc một giá trị cụ thể
+});
+
+builder.Services.Configure<FormOptions>(x =>
+{
+    x.ValueLengthLimit = int.MaxValue;
+    x.MultipartBodyLengthLimit = int.MaxValue;
+    x.MultipartHeadersLengthLimit = int.MaxValue;
+});
 
 var app = builder.Build();
 

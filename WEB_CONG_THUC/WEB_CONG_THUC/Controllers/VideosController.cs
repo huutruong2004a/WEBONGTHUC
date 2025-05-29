@@ -163,8 +163,8 @@ namespace WEB_CONG_THUC.Controllers
             _context.VideoComments.Add(comment);
             await _context.SaveChangesAsync();
 
-            // Redirect back to the video
-            return RedirectToAction(nameof(Index));
+            // Chuyển hướng về trang Details của video hiện tại
+            return RedirectToAction(nameof(Details), new { id = videoId });
         }
 
         [HttpPost]
@@ -364,12 +364,23 @@ namespace WEB_CONG_THUC.Controllers
 
         private async Task<string> SaveVideoFile(IFormFile file)
         {
+            // Tạo tên file độc nhất
             string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-            string filePath = Path.Combine(_webHostEnvironment.WebRootPath, "videos", fileName);
 
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            // Đảm bảo thư mục tồn tại
+            string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "videos");
+            if (!Directory.Exists(uploadsFolder))
             {
-                await file.CopyToAsync(stream);
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            // Đường dẫn đầy đủ đến file
+            string filePath = Path.Combine(uploadsFolder, fileName);
+
+            // Lưu file
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(fileStream);
             }
 
             return fileName;
@@ -401,6 +412,47 @@ namespace WEB_CONG_THUC.Controllers
             }
 
             return View(video);
+        }
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var video = await _context.Videos
+                .Include(v => v.Comments)
+                .FirstOrDefaultAsync(v => v.Id == id);
+
+            if (video == null)
+                return NotFound();
+
+            // Xóa file video nếu là video upload
+            if (video.UploadType != VideoUploadType.Url && !string.IsNullOrEmpty(video.VideoUrl))
+            {
+                var videoPath = Path.Combine(_webHostEnvironment.WebRootPath, video.VideoUrl.TrimStart('/'));
+                if (System.IO.File.Exists(videoPath))
+                {
+                    System.IO.File.Delete(videoPath);
+                }
+            }
+
+            // Xóa thumbnail nếu có
+            if (!string.IsNullOrEmpty(video.ThumbnailUrl) && !video.ThumbnailUrl.StartsWith("http"))
+            {
+                var thumbnailPath = Path.Combine(_webHostEnvironment.WebRootPath, video.ThumbnailUrl.TrimStart('/'));
+                if (System.IO.File.Exists(thumbnailPath))
+                {
+                    System.IO.File.Delete(thumbnailPath);
+                }
+            }
+
+            // Xóa các comments liên quan
+            _context.VideoComments.RemoveRange(video.Comments);
+
+            // Xóa video
+            _context.Videos.Remove(video);
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Video đã được xóa thành công.";
+            return RedirectToAction(nameof(Manage));
         }
     }
 }

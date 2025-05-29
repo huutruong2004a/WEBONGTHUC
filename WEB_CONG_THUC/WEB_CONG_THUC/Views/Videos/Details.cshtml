@@ -8,29 +8,44 @@
         <!-- Video Player Section -->
         <div class="col-lg-8">
             <div class="video-player-section bg-white rounded-3 shadow-sm p-3">
-                <div class="video-player-container mb-4">
-                    @{
-                        string videoId = "";
-                        if (Model.VideoUrl.Contains("youtube.com/watch?v="))
+                <div class="video-player-section mb-4">
+                    @if (!string.IsNullOrEmpty(Model.VideoUrl))
+                    {
+                        @if (Model.UploadType == VideoUploadType.Url)
                         {
-                            videoId = Model.VideoUrl.Split("v=")[1].Split('&')[0];
+                            string videoId = "";
+                            if (Model.VideoUrl.Contains("youtube.com/watch?v="))
+                            {
+                                videoId = Model.VideoUrl.Split("v=")[1].Split('&')[0];
+                            }
+                            else if (Model.VideoUrl.Contains("youtu.be/"))
+                            {
+                                videoId = Model.VideoUrl.Split('/').Last().Split('?')[0];
+                            }
+
+                            @if (!string.IsNullOrEmpty(videoId))
+                            {
+                                <div class="ratio ratio-16x9 rounded-3 overflow-hidden shadow">
+                                    <iframe src="https://www.youtube.com/embed/@videoId"
+                                            title="@Model.Title"
+                                            frameborder="0"
+                                            class="rounded-3"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowfullscreen>
+                                    </iframe>
+                                </div>
+                            }
                         }
-                        else if (Model.VideoUrl.Contains("youtu.be/"))
+                        else
                         {
-                            videoId = Model.VideoUrl.Split('/').Last().Split('?')[0];
+                            <div class="ratio ratio-16x9 rounded-3 overflow-hidden shadow">
+                                <video id="localVideo" class="w-100 h-100" controls>
+                                    <source src="@Url.Content(Model.VideoUrl)" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
                         }
                     }
-                    @if (!string.IsNullOrEmpty(videoId))
-                    {
-                        <div class="ratio ratio-16x9 rounded-3 overflow-hidden shadow">
-                            <iframe src="https://www.youtube.com/embed/@videoId"
-                                    title="@Model.Title"
-                                    frameborder="0"
-                                    class="rounded-3"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowfullscreen>
-                            </iframe>
-                        </div>
                     }
                 </div>
 
@@ -80,6 +95,7 @@
                         <div class="comment-form-container bg-light p-3 rounded-3 mb-4">
                             <form asp-action="AddComment" method="post" class="comment-form">
                                 <input type="hidden" name="videoId" value="@Model.Id" />
+                                <input type="hidden" name="returnUrl" value="@Url.Action("Details", new { id = Model.Id })" />
                                 <div class="form-group">
                                     <textarea name="content" class="form-control border-0 shadow-sm"
                                               rows="3" placeholder="Chia sẻ suy nghĩ của bạn..." required></textarea>
