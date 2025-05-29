@@ -1,0 +1,110 @@
+﻿@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<section class="auth-section">
+    <div class="container">
+        <div class="auth-container">
+            <div class="auth-form-container">
+                <div class="auth-header">
+                    <h1>@ViewData["Title"]</h1>
+                    <p>Đăng nhập để truy cập tài khoản của bạn</p>
+                </div>
+
+                <form id="account" method="post" class="auth-form">
+                    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+                    <div class="form-group">
+                        <div class="input-group">
+                            <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                            <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="Email" />
+                        </div>
+                        <span asp-validation-for="Input.Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-group">
+                            <span class="input-icon"><i class="fas fa-lock"></i></span>
+                            <input asp-for="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Mật khẩu" />
+                        </div>
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group remember-forgot">
+                        <div class="remember-me">
+                            <input class="form-check-input" asp-for="Input.RememberMe" />
+                            <label asp-for="Input.RememberMe">Ghi nhớ đăng nhập</label>
+                        </div>
+                        <a id="forgot-password" asp-page="./ForgotPassword">Quên mật khẩu?</a>
+                    </div>
+
+                    <div class="form-group">
+                        <button id="login-submit" type="submit" class="btn btn-primary btn-block">Đăng nhập</button>
+                    </div>
+
+                    <div class="auth-links">
+                        <p>Chưa có tài khoản? <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Đăng ký</a></p>
+                        <p><a id="resend-confirmation" asp-page="./ResendEmailConfirmation">Gửi lại email xác nhận</a></p>
+                    </div>
+                </form>
+            </div>
+
+            <div class="auth-social">
+                <div class="auth-social-content">
+                    <h3>Hoặc đăng nhập bằng</h3>
+
+                    @{
+                        if ((Model.ExternalLogins?.Count ?? 0) == 0)
+                        {
+                            <div class="social-placeholder">
+                                <div class="social-btn disabled">
+                                    <i class="fab fa-google"></i>
+                                    <span>Google</span>
+                                </div>
+                                <div class="social-btn disabled">
+                                    <i class="fab fa-facebook-f"></i>
+                                    <span>Facebook</span>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                                <div class="social-buttons">
+                                    @foreach (var provider in Model.ExternalLogins!)
+                                    {
+                                        <button type="submit" class="social-btn" name="provider" value="@provider.Name" title="Đăng nhập bằng tài khoản @provider.DisplayName">
+                                            @if (provider.Name.ToLower().Contains("google"))
+                                            {
+                                                <i class="fab fa-google"></i>
+                                            }
+                                            else if (provider.Name.ToLower().Contains("facebook"))
+                                            {
+                                                <i class="fab fa-facebook-f"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-external-link-alt"></i>
+                                            }
+                                            <span>@provider.DisplayName</span>
+                                        </button>
+                                    }
+                                </div>
+                            </form>
+                        }
+                    }
+
+                    <div class="auth-image">
+                        <img src="/images/cooking-illustration.jpg" alt="Cooking Illustration" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

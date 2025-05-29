@@ -1,0 +1,17 @@
+﻿@model WEB_CONG_THUC.Models.Blog
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<h2>@Model.Title</h2>
+<p><small>Đăng lúc: @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small></p>
+
+<hr />
+
+<!-- Nội dung blog có thể chứa HTML và hình ảnh -->
+<div class="blog-content">
+    @Html.Raw(Model.Content)
+</div>
+
+<a href="@Url.Action("Index")" class="btn btn-secondary mt-3">Quay lại danh sách</a>

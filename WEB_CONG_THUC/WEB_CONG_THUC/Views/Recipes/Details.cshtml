@@ -1,0 +1,421 @@
+@using System.Security.Claims
+@model WEB_CONG_THUC.Models.Recipe
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+
+<link rel="stylesheet" href="~/css/detail-recipe.css" />
+
+<div class="recipe-details-wrapper">
+    <div class="container">
+        <div class="recipe-header">
+            <div class="header-content">
+                <div class="recipe-badge">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <div class="header-text">
+                    <h1 class="recipe-title">@Model.Title</h1>
+                    <div class="recipe-meta-header">
+                        <span class="author">
+                            <i class="fas fa-user"></i>
+                            @Model.User?.UserName
+                        </span>
+                        <span class="date">
+                            <i class="fas fa-calendar"></i>
+                            @Model.CreatedAt.ToString("dd/MM/yyyy")
+                        </span>
+                        @if (Model.IsPopular)
+                        {
+                            <span class="popular-badge">
+                                <i class="fas fa-star"></i>
+                                Nổi bật
+                            </span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="recipe-content-grid">
+            <!-- Main Content -->
+            <div class="main-content">
+                <div class="content-card image-card">
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <img src="@Model.ImageUrl" alt="@Model.Title" class="recipe-image" />
+                    }
+                    else
+                    {
+                        <img src="/images/recipe-placeholder.jpg" alt="Hình ảnh công thức mặc định" class="recipe-image" />
+                    }
+                    <div class="image-overlay">
+                        <div class="recipe-stats">
+                            <div class="stat-item">
+                                <i class="fas fa-clock"></i>
+                                <span>@((Model.PrepTime ) + (Model.CookTime )) phút</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-users"></i>
+                                <span>@Model.Servings người</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="fas fa-star"></i>
+                                <span>@(Model.Reviews?.Any() == true ? Model.Reviews.Average(r => r.Rating).ToString("F1") : "N/A")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <div class="content-card">
+                        <div class="card-header">
+                            <i class="fas fa-info-circle"></i>
+                            <h3>Mô tả</h3>
+                        </div>
+                        <div class="card-content">
+                            <p class="description">@Html.Raw(Model.Description?.Replace("\n", "<br />"))</p>
+                        </div>
+                    </div>
+                }
+
+                <div class="content-card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-bar"></i>
+                        <h3>Thông tin công thức</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="recipe-info-grid">
+                            <div class="info-item">
+                                <div class="info-icon prep-time">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="info-content">
+                                    <span class="info-label">Chuẩn bị</span>
+                                    <span class="info-value">@(Model.PrepTime ) phút</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-icon cook-time">
+                                    <i class="fas fa-fire"></i>
+                                </div>
+                                <div class="info-content">
+                                    <span class="info-label">Nấu nướng</span>
+                                    <span class="info-value">@(Model.CookTime ) phút</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-icon servings">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="info-content">
+                                    <span class="info-label">Khẩu phần</span>
+                                    <span class="info-value">@Model.Servings người</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-icon category">
+                                    <i class="fas fa-tag"></i>
+                                </div>
+                                <div class="info-content">
+                                    <span class="info-label">Danh mục</span>
+                                    <span class="info-value">@Model.Category?.Name</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-header">
+                        <i class="fas fa-list-ul"></i>
+                        <h3>Nguyên liệu</h3>
+                        @if (!string.IsNullOrEmpty(Model.Ingredients))
+                        {
+                            <span class="item-count">
+                                @Model.Ingredients.Replace("\\n", "\n").Split('\n', StringSplitOptions.RemoveEmptyEntries).Length món
+                            </span>
+                        }
+                    </div>
+                    <div class="card-content">
+                        @if (!string.IsNullOrEmpty(Model.Ingredients))
+                        {
+                            <div class="ingredients-list">
+                                @foreach (var ingredient in Model.Ingredients.Replace("\\n", "\n").Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    <div class="ingredient-item">
+                                        <i class="fas fa-check"></i>
+                                        <span>@ingredient</span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="empty-state">Chưa có thông tin nguyên liệu.</p>
+                        }
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div class="card-header">
+                        <i class="fas fa-list-ol"></i>
+                        <h3>Cách thực hiện</h3>
+                        @if (!string.IsNullOrEmpty(Model.Instructions))
+                        {
+                            <span class="item-count">
+                                @Model.Instructions.Replace("\\n", "\n").Split('\n', StringSplitOptions.RemoveEmptyEntries).Length bước
+                            </span>
+                        }
+                    </div>
+                    <div class="card-content">
+                        @if (!string.IsNullOrEmpty(Model.Instructions))
+                        {
+                            <div class="instructions-list">
+                                @{
+                                    var instructions = Model.Instructions.Replace("\\n", "\n").Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                                }
+                                @for (int i = 0; i < instructions.Length; i++)
+                                {
+                                    <div class="instruction-item">
+                                        <div class="instruction-number">@(i + 1)</div>
+                                        <div class="instruction-content">
+                                            @Html.Raw(instructions[i])
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="empty-state">Chưa có thông tin hướng dẫn.</p>
+                        }
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.VideoUrl))
+                {
+                    <div class="content-card">
+                        <div class="card-header">
+                            <i class="fas fa-video"></i>
+                            <h3>Video hướng dẫn</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="video-container">
+                                @{
+                                    string videoId = "";
+                                    if (Model.VideoUrl.Contains("youtube.com/watch?v="))
+                                    {
+                                        videoId = Model.VideoUrl.Split("v=")[1].Split('&')[0];
+                                    }
+                                    else if (Model.VideoUrl.Contains("youtu.be/"))
+                                    {
+                                        videoId = Model.VideoUrl.Split('/').Last().Split('?')[0];
+                                    }
+                                }
+                                @if (!string.IsNullOrEmpty(videoId))
+                                {
+                                    <iframe src="https://www.youtube.com/embed/@videoId" allowfullscreen></iframe>
+                                }
+                                else
+                                {
+                                    <div class="video-link">
+                                        <i class="fas fa-external-link-alt"></i>
+                                        <a href="@Model.VideoUrl" target="_blank">Xem video hướng dẫn</a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Action Card -->
+                <div class="sidebar-card">
+                    <div class="card-header">
+                        <i class="fas fa-cog"></i>
+                        <h4>Thao tác</h4>
+                    </div>
+                    <div class="card-content">
+                        <div class="action-buttons">
+                            @if (User.Identity != null && User.Identity.IsAuthenticated &&
+                            User.FindFirstValue(ClaimTypes.NameIdentifier) == Model.UserId)
+                            {
+                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-action edit">
+                                    <i class="fas fa-edit"></i>
+                                    <span>Chỉnh sửa</span>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn-action delete">
+                                    <i class="fas fa-trash"></i>
+                                    <span>Xóa</span>
+                                </a>
+                            }
+                            <a asp-action="Index" class="btn-action back">
+                                <i class="fas fa-arrow-left"></i>
+                                <span>Quay lại</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rating Summary Card -->
+                <div class="sidebar-card">
+                    <div class="card-header">
+                        <i class="fas fa-star"></i>
+                        <h4>Đánh giá</h4>
+                    </div>
+                    <div class="card-content">
+                        @if (Model.Reviews?.Any() == true)
+                        {
+                            <div class="rating-summary">
+                                <div class="average-rating">
+                                    <span class="rating-number">@Model.Reviews.Average(r => r.Rating).ToString("F1")</span>
+                                    <div class="rating-stars">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            @if (i <= Model.Reviews.Average(r => r.Rating))
+                                            {
+                                                <i class="fas fa-star"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="far fa-star"></i>
+                                            }
+                                        }
+                                    </div>
+                                    <span class="rating-count">(@Model.Reviews.Count đánh giá)</span>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="no-ratings">Chưa có đánh giá nào</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reviews Section -->
+        <div class="reviews-section">
+            <div class="section-header">
+                <h2>
+                    <i class="fas fa-comments"></i>
+                    Đánh giá & Bình luận
+                </h2>
+                <span class="review-count">@Model.Reviews.Count đánh giá</span>
+            </div>
+
+            <!-- Add Review Form -->
+            @if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                <div class="add-review-card">
+                    <div class="card-header">
+                        <i class="fas fa-plus"></i>
+                        <h4>Để lại đánh giá của bạn</h4>
+                    </div>
+                    <div class="card-content">
+                        <form asp-controller="Reviews" asp-action="Create" method="post" class="review-form">
+                            <input type="hidden" name="RecipeId" value="@Model.Id" />
+
+                            <div class="form-group">
+                                <label class="form-label">Đánh giá của bạn</label>
+                                <div class="rating-input">
+                                    <input type="radio" name="Rating" value="5" id="star5" />
+                                    <label for="star5"><i class="fas fa-star"></i></label>
+                                    <input type="radio" name="Rating" value="4" id="star4" />
+                                    <label for="star4"><i class="fas fa-star"></i></label>
+                                    <input type="radio" name="Rating" value="3" id="star3" />
+                                    <label for="star3"><i class="fas fa-star"></i></label>
+                                    <input type="radio" name="Rating" value="2" id="star2" />
+                                    <label for="star2"><i class="fas fa-star"></i></label>
+                                    <input type="radio" name="Rating" value="1" id="star1" />
+                                    <label for="star1"><i class="fas fa-star"></i></label>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="Comment" class="form-label">Bình luận</label>
+                                <textarea name="Comment" class="form-textarea" rows="4"
+                                          placeholder="Chia sẻ trải nghiệm của bạn về công thức này..." required></textarea>
+                            </div>
+
+                            <button type="submit" class="btn-submit">
+                                <i class="fas fa-paper-plane"></i>
+                                Gửi đánh giá
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="login-prompt">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <p>
+                        <a asp-controller="Account" asp-action="Login"
+                           asp-route-returnUrl="@Url.Action("Details", "Recipes", new { id = Model.Id })">
+                            Đăng nhập
+                        </a>
+                        để để lại đánh giá và bình luận
+                    </p>
+                </div>
+            }
+
+            <!-- Reviews List -->
+            <div class="reviews-list">
+                @if (Model.Reviews != null && Model.Reviews.Any())
+                {
+                    @foreach (var review in Model.Reviews.OrderByDescending(r => r.CreatedAt))
+                    {
+                        <div class="review-item">
+                            <div class="review-header">
+                                <div class="reviewer-info">
+                                    <div class="reviewer-avatar">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div class="reviewer-details">
+                                        <span class="reviewer-name">@review.User?.UserName</span>
+                                        <span class="review-date">@review.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                                    </div>
+                                </div>
+                                <div class="review-rating">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        @if (i <= review.Rating)
+                                        {
+                                            <i class="fas fa-star"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="far fa-star"></i>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            <div class="review-content">
+                                <p>@review.Comment</p>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-reviews">
+                        <i class="fas fa-comments"></i>
+                        <p>Chưa có đánh giá nào cho công thức này.</p>
+                        <p>Hãy là người đầu tiên chia sẻ trải nghiệm của bạn!</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/details-recipe.js"></script>
+}
