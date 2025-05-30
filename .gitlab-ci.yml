@@ -1,6 +1,6 @@
 stages:
   - build
-  - deploy_to_plesk_branch # <-- Tên stage này
+  - deploy_to_plesk_branch
 
 variables:
   PROJECT_NAME: WEB_CONG_THUC # Tên dự án .NET của bạn
@@ -12,7 +12,7 @@ build:
   image: mcr.microsoft.com/dotnet/sdk:9.0 # Sử dụng image SDK .NET, thay đổi phiên bản nếu cần
   script:
     - echo "Restoring NuGet packages..."
-    - dotnet restore
+    - dotnet restore $PROJECT_NAME/$PROJECT_NAME.csproj # <-- CHỈNH SỬA DÒNG NÀY
     - echo "Building and publishing the project..."
     - dotnet publish $PROJECT_NAME/$PROJECT_NAME.csproj -c Release -o $BUILD_OUTPUT_DIR --no-restore
   artifacts:
@@ -37,19 +37,15 @@ deploy_to_plesk_branch: # <-- Tên của job
     git checkout -B plesk-deploy # Tạo hoặc chuyển sang nhánh 'plesk-deploy'
 
     echo "Cleaning existing files in deploy branch..."
-    # Lệnh này sẽ xóa mọi thứ trong thư mục hiện tại trừ .git và .gitlab-ci.yml.
-    # Đảm bảo bạn đang ở đúng thư mục (deploy_temp_repo)
     find . -maxdepth 1 -not -name '.git' -not -name '.gitlab-ci.yml' -exec rm -rf {} +
 
     echo "Copying published artifacts..."
     cp -r ../$BUILD_OUTPUT_DIR/. . # Sao chép tất cả các file đã publish vào thư mục gốc của nhánh deploy
 
     echo "Adding changes and committing..."
-    # || true để pipeline không bị lỗi nếu không có thay đổi nào để commit (ví dụ: chạy lại pipeline mà không có thay đổi code)
     git add .
     git commit -m "CI/CD: Auto-deploying from $CI_COMMIT_SHORT_SHA" || true
     echo "Pushing to plesk-deploy branch..."
     git push -f "https://gitlab-ci-token:${GITLAB_DEPLOY_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git" plesk-deploy
-    # -f (force): Đảm bảo ghi đè nếu có lịch sử khác biệt (cần thiết khi deploy artifacts)
   dependencies:
     - build # Đảm bảo job này chạy sau khi job 'build' hoàn thành và có artifacts
