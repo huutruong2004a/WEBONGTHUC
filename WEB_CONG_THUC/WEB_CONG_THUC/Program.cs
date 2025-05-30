@@ -86,6 +86,7 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles(); // Đảm bảo gọi UseStaticFiles trước UseRouting
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -93,7 +94,6 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 
-app.UseStaticFiles();
 app.MapRazorPages();
 app.MapControllerRoute(
     name: "default",

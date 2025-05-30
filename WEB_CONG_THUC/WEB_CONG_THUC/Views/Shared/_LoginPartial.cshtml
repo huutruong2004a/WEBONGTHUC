@@ -1,7 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
-
+<link href="~/css/user-nav.css" rel="stylesheet" />
 <div class="user-nav">
     @if (SignInManager.IsSignedIn(User))
     {
@@ -18,10 +18,24 @@
                 <a asp-controller="Recipes" asp-action="MyRecipes">
                     <i class="fas fa-book-open"></i> Công thức của tôi
                 </a>
-                <a href="/recipes/favorites">
-                    <i class="fas fa-heart"></i> Yêu thích
-                </a>
-                <a href="/Blog/Create">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle dropdown-item" href="#" id="favoritesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-heart"></i> Yêu thích
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="favoritesDropdown">
+                        <li>
+                            <a class="dropdown-item" asp-controller="Recipes" asp-action="MyFavoriteRecipes">
+                                <i class="fas fa-utensils"></i> Công thức yêu thích
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" asp-controller="Videos" asp-action="MyFavoriteVideos">
+                                <i class="fas fa-video"></i> Video yêu thích
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <a href="/Blog/Create" class="dropdown-item">  @*Thêm lại class dropdown-item cho đồng bộ*@
                     <i class="fas fa-pen"></i> Đăng Blog
                 </a>
                 <a class="dropdown-item" asp-controller="Videos" asp-action="Create">
@@ -57,9 +71,14 @@
     }
     else
     {
-        <div class="auth-buttons">
-            <a class="btn btn-outline" asp-area="Identity" asp-page="/Account/Login">Đăng nhập</a>
-            <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Register">Đăng ký</a>
-        </div>
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Đăng ký</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Đăng nhập</a>
+            </li>
+        </ul>
     }
 </div>
+<script src="~/js/user-nav.js"></script>

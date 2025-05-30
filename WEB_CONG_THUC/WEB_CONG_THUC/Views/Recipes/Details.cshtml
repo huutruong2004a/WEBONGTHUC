@@ -35,6 +35,15 @@
                         }
                     </div>
                 </div>
+                @if (User.Identity!.IsAuthenticated)
+                {
+                    <button class="btn btn-outline-warning ms-auto btn-favorite-recipe @(ViewBag.IsRecipeFavorited ? "active" : "")"
+                            data-recipe-id="@Model.Id"
+                            style="position: absolute; top: 20px; right: 20px;">
+                        <i class="fas fa-heart"></i>
+                        <span class="ms-1">@(ViewBag.IsRecipeFavorited ? "Đã thích" : "Yêu thích")</span>
+                    </button>
+                }
             </div>
         </div>
 
@@ -306,114 +315,103 @@
         </div>
 
         <!-- Reviews Section -->
-        <div class="reviews-section">
-            <div class="section-header">
-                <h2>
-                    <i class="fas fa-comments"></i>
-                    Đánh giá & Bình luận
-                </h2>
-                <span class="review-count">@(Model.Reviews?.Count ?? 0) đánh giá</span>
-            </div>
+        <div class="reviews-section mt-4 pt-4 border-top">
+            <h3 class="mb-3"><i class="fas fa-comments text-warning"></i> Đánh giá & Bình luận (@(Model.Reviews?.Count ?? 0))</h3>
 
-            <!-- Add Review Form -->
-            @if (User.Identity != null && User.Identity.IsAuthenticated)
+            @if (User.Identity?.IsAuthenticated ?? false)
             {
-                <div class="add-review-card">
-                    <div class="card-header">
-                        <i class="fas fa-plus"></i>
-                        <h4>Để lại đánh giá của bạn</h4>
-                    </div>
-                    <div class="card-content">
-                        <form asp-controller="Reviews" asp-action="Create" method="post" class="review-form">
-                            <input type="hidden" name="RecipeId" value="@Model.Id" />
-
-                            <div class="form-group">
-                                <label class="form-label">Đánh giá của bạn</label>
-                                <div class="rating-input">
-                                    <input type="radio" name="Rating" value="5" id="star5" />
-                                    <label for="star5"><i class="fas fa-star"></i></label>
-                                    <input type="radio" name="Rating" value="4" id="star4" />
-                                    <label for="star4"><i class="fas fa-star"></i></label>
-                                    <input type="radio" name="Rating" value="3" id="star3" />
-                                    <label for="star3"><i class="fas fa-star"></i></label>
-                                    <input type="radio" name="Rating" value="2" id="star2" />
-                                    <label for="star2"><i class="fas fa-star"></i></label>
-                                    <input type="radio" name="Rating" value="1" id="star1" />
-                                    <label for="star1"><i class="fas fa-star"></i></label>
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Để lại đánh giá của bạn</h5>
+                        <form asp-controller="Recipes" asp-action="AddReview" method="post">
+                            <input type="hidden" name="recipeId" value="@Model.Id" />
+                            <input type="hidden" name="returnUrl" value="@Url.Action("Details", "Recipes", new { id = Model.Id })" />
+                            <div class="mb-3">
+                                <label for="rating-recipe-input" class="form-label">Đánh giá của bạn:</label>
+                                <div id="star-rating-recipe" class="fs-4 star-rating-input" style="cursor:pointer;">
+                                    <i class="far fa-star" data-value="1"></i>
+                                    <i class="far fa-star" data-value="2"></i>
+                                    <i class="far fa-star" data-value="3"></i>
+                                    <i class="far fa-star" data-value="4"></i>
+                                    <i class="far fa-star" data-value="5"></i>
                                 </div>
+                                <input type="hidden" name="rating" id="rating-recipe-input" value="0" />
                             </div>
-
-                            <div class="form-group">
-                                <label for="Comment" class="form-label">Bình luận</label>
-                                <textarea name="Comment" class="form-textarea" rows="4"
-                                placeholder="Chia sẻ trải nghiệm của bạn về công thức này..." required></textarea>
+                            <div class="mb-3">
+                                <label for="comment" class="form-label">Bình luận (không bắt buộc nếu bạn chỉ đánh giá):</label>
+                                <textarea name="comment" class="form-control" rows="3" placeholder="Chia sẻ cảm nghĩ của bạn..."></textarea>
                             </div>
-
-                            <button type="submit" class="btn-submit">
-                                <i class="fas fa-paper-plane"></i>
-                                Gửi đánh giá
-                            </button>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane"></i> Gửi đánh giá
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
             }
             else
             {
-                <div class="login-prompt">
+                <div class="alert alert-info text-center">
                     <i class="fas fa-sign-in-alt"></i>
-                    <p>
-                        <a asp-controller="Account" asp-action="Login"
-                            asp-route-returnUrl="@Url.Action("Details", "Recipes", new { id = Model.Id })">
-                            Đăng nhập
-                        </a>
-                        để để lại đánh giá và bình luận
-                    </p>
+                    <a asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@Url.Action("Details", "Recipes", new { id = Model.Id })">Đăng nhập</a>
+                    để để lại đánh giá và bình luận.
                 </div>
             }
 
-            <!-- Reviews List -->
-            <div class="reviews-list">
+            <div class="reviews-list mt-4">
                 @if (Model.Reviews != null && Model.Reviews.Any())
                 {
-                    @foreach (var review in Model.Reviews.OrderByDescending(r => r.CreatedAt))
+                    foreach (var review in Model.Reviews.OrderByDescending(r => r.CreatedAt))
                     {
-                        <div class="review-item">
-                            <div class="review-header">
-                                <div class="reviewer-info">
-                                    <div class="reviewer-avatar">
-                                        <i class="fas fa-user"></i>
+                        <div class="review-item card mb-3 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-user-circle fa-2x text-secondary me-2"></i>
+                                        <div>
+                                            <div class="fw-bold">@(review.User?.UserName ?? "Ẩn danh")</div>
+                                            <small class="text-muted">
+                                                @{
+                                                    var timeAgo = DateTime.Now - review.CreatedAt;
+                                                    string timeDisplay = timeAgo.Days switch
+                                                    {
+                                                        0 when timeAgo.Hours == 0 && timeAgo.Minutes < 2 => "Vừa xong",
+                                                        0 when timeAgo.Hours == 0 => $"{timeAgo.Minutes} phút trước",
+                                                        0 => $"{timeAgo.Hours} giờ trước",
+                                                        1 => "Hôm qua lúc " + review.CreatedAt.ToString("HH:mm"),
+                                                        _ => review.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                                    };
+                                                }
+                                                @timeDisplay
+                                            </small>
+                                        </div>
                                     </div>
-                                    <div class="reviewer-details">
-                                        <span class="reviewer-name">@review.User?.UserName</span>
-                                        <span class="review-date">@review.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
-                                    </div>
-                                </div>
-                                <div class="review-rating">
-                                    @for (int i = 1; i <= 5; i++)
+                                    @if (review.Rating > 0)
                                     {
-                                        @if (i <= review.Rating)
-                                        {
-                                            <i class="fas fa-star"></i>
-                                        }
-                                        else
-                                        {
-                                            <i class="far fa-star"></i>
-                                        }
+                                        <div class="star-rating-display text-warning">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <i class="@(i <= review.Rating ? "fas" : "far") fa-star"></i>
+                                            }
+                                        </div>
                                     }
                                 </div>
-                            </div>
-                            <div class="review-content">
-                                <p>@review.Comment</p>
+                                @if (!string.IsNullOrEmpty(review.Comment))
+                                {
+                                    <div class="review-comment mt-2">
+                                        <p class="mb-0">@Html.Raw(review.Comment.Replace("\n", "<br />"))</p>
+                                    </div>
+                                }
                             </div>
                         </div>
                     }
                 }
                 else
                 {
-                    <div class="empty-reviews">
-                        <i class="fas fa-comments"></i>
-                        <p>Chưa có đánh giá nào cho công thức này.</p>
-                        <p>Hãy là người đầu tiên chia sẻ trải nghiệm của bạn!</p>
+                    <div class="text-center py-4">
+                        <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Chưa có đánh giá nào cho công thức này. Hãy là người đầu tiên!</p>
                     </div>
                 }
             </div>
@@ -423,4 +421,61 @@
 
 @section Scripts {
     <script src="~/js/details-recipe.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Xử lý sao đánh giá cho Recipe
+            const starsRecipe = document.querySelectorAll('#star-rating-recipe .fa-star');
+            const ratingInputRecipe = document.getElementById('rating-recipe-input');
+
+            starsRecipe.forEach(star => {
+                star.addEventListener('click', function () {
+                    const value = parseInt(this.dataset.value);
+                    ratingInputRecipe.value = value;
+                    starsRecipe.forEach((s, index) => {
+                        s.classList.toggle('fas', index < value);
+                        s.classList.toggle('far', index >= value);
+                        s.classList.toggle('text-warning', index < value);
+                    });
+                });
+            });
+
+            // Xử lý nút yêu thích cho Recipe
+            const favoriteRecipeBtn = document.querySelector('.btn-favorite-recipe');
+            if (favoriteRecipeBtn) {
+                favoriteRecipeBtn.addEventListener('click', async function() {
+                    const recipeId = this.dataset.recipeId;
+                    const icon = this.querySelector('i');
+                    const text = this.querySelector('span');
+                    
+                    try {
+                        const response = await fetch(`/Recipes/ToggleFavoriteRecipe?recipeId=${recipeId}`, {
+                            method: 'POST',
+                            headers: {
+                                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value // Cần có token nếu dùng ValidateAntiForgeryToken
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.success) {
+                                this.classList.toggle('active', data.isFavorited);
+                                icon.classList.toggle('fas', data.isFavorited);
+                                icon.classList.toggle('far', !data.isFavorited); // Nếu muốn đổi icon khi chưa active
+                                text.textContent = data.isFavorited ? ' Đã thích' : ' Yêu thích';
+                            } else {
+                                console.error('Lỗi khi thay đổi trạng thái yêu thích:', data.message);
+                                // Hiển thị thông báo lỗi cho người dùng nếu cần
+                            }
+                        } else {
+                            console.error('Lỗi server khi thay đổi trạng thái yêu thích.');
+                             // Hiển thị thông báo lỗi cho người dùng nếu cần
+                        }
+                    } catch (error) {
+                        console.error('Lỗi JavaScript khi yêu thích công thức:', error);
+                         // Hiển thị thông báo lỗi cho người dùng nếu cần
+                    }
+                });
+            }
+        });
+    </script>
 }
