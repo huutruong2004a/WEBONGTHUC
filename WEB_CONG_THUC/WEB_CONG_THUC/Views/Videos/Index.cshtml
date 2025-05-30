@@ -16,14 +16,10 @@
         <div class="col-md-4">
             <form asp-action="Index" method="get" id="searchForm">
                 <div class="input-group">
-                    <select name="recipeId" id="recipeId" class="form-select">
-                        <option value="">Tất cả công thức</option>
-                        @foreach (var recipe in ViewBag.Recipes)
-                        {
-                            <option value="@recipe.Value" selected="@(Context.Request.Query["recipeId"] == recipe.Value)">
-                                @recipe.Text
-                            </option>
-                        }
+                    <select name="categoryId" id="categoryId" class="form-select" asp-items="ViewBag.Categories" onchange="document.getElementById('searchForm').submit();">
+                        <option value="">Tất cả danh mục</option>
+                        @* Các options sẽ được render bởi asp-items="ViewBag.Categories" *@
+                        @* Giữ lại logic selected nếu cần thiết, nhưng asp-items và giá trị của categoryId sẽ tự xử lý việc này nếu ViewBag.SelectedCategoryId được truyền đúng *@
                     </select>
                     <input type="text" class="form-control" name="searchString"
                            placeholder="Tìm kiếm..." value="@Context.Request.Query["searchString"]">
@@ -67,9 +63,18 @@
                                 <a href="@Url.Action("Details", new { id = video.Id })"
                                    class="text-decoration-none text-dark">@video.Title</a>
                             </h5>
-                            <p class="video-description text-muted">
-                                @(video.Description?.Length > 100 ? video.Description.Substring(0, 100) + "..." : video.Description)
+                            <p class="video-description text-muted small">
+                                @(video.Description?.Length > 80 ? video.Description.Substring(0, 80) + "..." : video.Description)
                             </p>
+                            @if (video.Category != null)
+                            {
+                                <div class="video-category mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-tag text-warning"></i>
+                                        <span class="ms-1">@video.Category.Name</span>
+                                    </small>
+                                </div>
+                            }
                             @if (video.Recipe != null)
                             {
                                 <div class="recipe-link mb-3">
@@ -108,10 +113,10 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Auto-submit form when recipe selection changes
-            document.getElementById('recipeId')?.addEventListener('change', function() {
-                document.getElementById('searchForm').submit();
-            });
+            // Auto-submit form when category selection changes (đã thêm onchange trực tiếp vào select)
+            // document.getElementById('categoryId')?.addEventListener('change', function() {
+            //     document.getElementById('searchForm').submit();
+            // });
 
             // Handle favorite button clicks
             document.querySelectorAll('.btn-favorite').forEach(btn => {

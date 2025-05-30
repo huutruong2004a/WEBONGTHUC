@@ -411,6 +411,34 @@ namespace WEB_CONG_THUC.Data.Migrations
                     b.ToTable("Recipes");
                 });
 
+            modelBuilder.Entity("WEB_CONG_THUC.Models.RecipeFavorite", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RecipeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipeId");
+
+                    b.HasIndex("UserId", "RecipeId")
+                        .IsUnique();
+
+                    b.ToTable("RecipeFavorites");
+                });
+
             modelBuilder.Entity("WEB_CONG_THUC.Models.RecipeReview", b =>
                 {
                     b.Property<int>("Id")
@@ -442,7 +470,7 @@ namespace WEB_CONG_THUC.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RecipeReview");
+                    b.ToTable("RecipeReviews");
                 });
 
             modelBuilder.Entity("WEB_CONG_THUC.Models.Video", b =>
@@ -452,6 +480,9 @@ namespace WEB_CONG_THUC.Data.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -493,6 +524,8 @@ namespace WEB_CONG_THUC.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CategoryId");
+
                     b.HasIndex("RecipeId");
 
                     b.HasIndex("UserId");
@@ -514,6 +547,9 @@ namespace WEB_CONG_THUC.Data.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -638,6 +674,25 @@ namespace WEB_CONG_THUC.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("WEB_CONG_THUC.Models.RecipeFavorite", b =>
+                {
+                    b.HasOne("WEB_CONG_THUC.Models.Recipe", "Recipe")
+                        .WithMany("Favorites")
+                        .HasForeignKey("RecipeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Recipe");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("WEB_CONG_THUC.Models.RecipeReview", b =>
                 {
                     b.HasOne("WEB_CONG_THUC.Models.Recipe", "Recipe")
@@ -659,6 +714,11 @@ namespace WEB_CONG_THUC.Data.Migrations
 
             modelBuilder.Entity("WEB_CONG_THUC.Models.Video", b =>
                 {
+                    b.HasOne("WEB_CONG_THUC.Models.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("WEB_CONG_THUC.Models.Recipe", "Recipe")
                         .WithMany()
                         .HasForeignKey("RecipeId");
@@ -668,6 +728,8 @@ namespace WEB_CONG_THUC.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.Navigation("Category");
 
                     b.Navigation("Recipe");
 
@@ -719,6 +781,8 @@ namespace WEB_CONG_THUC.Data.Migrations
 
             modelBuilder.Entity("WEB_CONG_THUC.Models.Recipe", b =>
                 {
+                    b.Navigation("Favorites");
+
                     b.Navigation("Reviews");
                 });
 
