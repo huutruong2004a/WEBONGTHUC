@@ -1,10 +1,36 @@
+stages:
+  - build
+  - deploy_to_plesk_branch # Đảm bảo stage này được định nghĩa
+
+variables:
+  PROJECT_NAME: WEB_CONG_THUC
+  BUILD_OUTPUT_DIR: publish_output
+  # URL Repository cho SSH. Thay đổi nếu server GitLab của bạn khác gitlab.com
+  GIT_SSH_REPO_URL: "git@${CI_SERVER_HOST}:${CI_PROJECT_PATH}.git"
+  PLESK_DEPLOY_BRANCH: plesk-deploy # Tên nhánh mà Plesk sẽ kéo về
+
+build:
+  stage: build
+  image: mcr.microsoft.com/dotnet/sdk:9.0 # Hoặc phiên bản .NET SDK bạn đang dùng
+  script:
+    - echo "Restoring NuGet packages for ${PROJECT_NAME}..."
+    # Đảm bảo đường dẫn đến file .csproj của bạn là chính xác!
+    - dotnet restore "${PROJECT_NAME}/${PROJECT_NAME}/${PROJECT_NAME}.csproj"
+    - echo "Building and publishing the project ${PROJECT_NAME}..."
+    - dotnet publish "${PROJECT_NAME}/${PROJECT_NAME}/${PROJECT_NAME}.csproj" -c Release -o "${BUILD_OUTPUT_DIR}" --no-restore
+  artifacts:
+    paths:
+      - "${BUILD_OUTPUT_DIR}/"
+    expire_in: 1 hour
+
 deploy_to_plesk_branch:
-  stage: deploy_to_plesk_branch
+  stage: deploy_to_plesk_branch # Gán job này cho stage đã định nghĩa
   image: alpine/git:latest
   only:
-    - develop
+    - develop # Chỉ chạy khi có commit vào nhánh develop
   before_script:
     - echo "Starting SSH agent setup..."
+    # Kiểm tra biến SSH_PRIVATE_KEY (loại File)
     - |
       if [ -z "${SSH_PRIVATE_KEY}" ]; then
         echo "LỖI: Biến SSH_PRIVATE_KEY (loại File) chưa được thiết lập trong CI/CD Variables."
@@ -15,7 +41,7 @@ deploy_to_plesk_branch:
         exit 1
       fi
     - eval $(ssh-agent -s)
-    - chmod 600 "${SSH_PRIVATE_KEY}"
+    - chmod 600 "${SSH_PRIVATE_KEY}" # GitLab runner sẽ đặt file này ở một đường dẫn tạm
     - ssh-add "${SSH_PRIVATE_KEY}"
     - echo "Configuring SSH known_hosts..."
     - mkdir -p ~/.ssh
@@ -32,17 +58,17 @@ deploy_to_plesk_branch:
   script:
     - echo "Configuring Git user..."
     - git config --global user.name "GitLab CI/CD Deployer"
-    - git config --global user.email "gitlab-ci@${CI_SERVER_HOST}"
-    - echo "Cloning repository to a temporary directory using SSH:"
-    - echo "URL: ${GIT_SSH_REPO_URL}"
-    - rm -rf deploy_temp_repo
+    - git config --global user.email "gitlab-ci@${CI_SERVER_HOST}" # Hoặc một email bất kỳ
+    # Dòng được sửa bằng cách đặt trong dấu nháy đơn
+    - 'echo "Cloning repository to a temporary directory using SSH: ${GIT_SSH_REPO_URL}"'
+    - rm -rf deploy_temp_repo # Xóa thư mục cũ nếu có
     - mkdir deploy_temp_repo
     - cd deploy_temp_repo
     - echo "Cloning deploy branch or initializing new one..."
     - git clone --depth 1 "${GIT_SSH_REPO_URL}" .
-    - git checkout -B "${PLESK_DEPLOY_BRANCH}"
+    - git checkout -B "${PLESK_DEPLOY_BRANCH}" # Tạo nhánh mới hoặc chuyển sang nếu đã có
     - echo "Cleaning existing files in deploy branch (except .git folder)..."
-    # Sử dụng một cách dọn dẹp khác để tránh lỗi cú pháp tiềm ẩn với ls và xargs
+    # Sử dụng find để dọn dẹp
     - find . -maxdepth 1 -mindepth 1 ! -name '.git' -exec rm -rf {} \; || true
     - echo "Copying published artifacts from ../${BUILD_OUTPUT_DIR} ..."
     - cp -r "../${BUILD_OUTPUT_DIR}/." .
