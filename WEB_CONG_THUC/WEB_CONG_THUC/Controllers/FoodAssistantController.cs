@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using WEB_CONG_THUC.Models; // Đảm bảo ChatMessage và RecipeInfo ở đây
 using WEB_CONG_THUC.Services; // Đảm bảo GeminiFoodAssistantService ở đây
+using System.Text.RegularExpressions;
 
 namespace WEB_CONG_THUC.Controllers
 {
@@ -11,8 +12,6 @@ namespace WEB_CONG_THUC.Controllers
     public class FoodAssistantController : ControllerBase
     {
         private readonly GeminiFoodAssistantService _foodAssistantService;
-        // Giả sử chúng ta có một nơi lưu trữ lịch sử chat tạm thời cho mỗi session/user
-        // Trong thực tế, bạn có thể muốn dùng distributed cache hoặc DB.
         private static readonly Dictionary<string, List<ChatMessage>> _conversationHistories = new Dictionary<string, List<ChatMessage>>();
 
         public FoodAssistantController(GeminiFoodAssistantService foodAssistantService)
@@ -20,17 +19,14 @@ namespace WEB_CONG_THUC.Controllers
             _foodAssistantService = foodAssistantService;
         }
 
-        // POST api/FoodAssistant/suggest-food
-        [HttpPost("suggest-food")]
-        public async Task<IActionResult> SuggestFood([FromBody] FoodSuggestionRequest request)
+        [HttpPost("process-message")]
+        public async Task<IActionResult> ProcessMessage([FromBody] ChatMessageRequest request)
         {
             if (request == null || string.IsNullOrWhiteSpace(request.UserInput))
             {
                 return BadRequest("User input is required.");
             }
 
-            // Lấy hoặc tạo lịch sử chat cho user/session
-            // Đơn giản hóa: dùng sessionId từ request, hoặc tạo mới nếu không có
             var sessionId = string.IsNullOrWhiteSpace(request.SessionId) ? System.Guid.NewGuid().ToString() : request.SessionId;
             if (!_conversationHistories.TryGetValue(sessionId, out var history))
             {
@@ -38,71 +34,67 @@ namespace WEB_CONG_THUC.Controllers
                 _conversationHistories[sessionId] = history;
             }
 
-            var suggestion = await _foodAssistantService.GetInteractiveFoodSuggestionAsync(request.UserInput, history);
+            // Determine action based on ActionType or UserInput content
+            string action = request.ActionType ?? DetermineActionFromInput(request.UserInput);
 
-            // Trả về cả suggestion và sessionId để client có thể tiếp tục cuộc hội thoại
-            return Ok(new { SessionId = sessionId, Suggestion = suggestion });
+            object responseData;
+            string responseType;
+
+            switch (action)
+            {
+                case "extractRecipeViaUrl":
+                    if (!IsValidYouTubeUrl(request.UserInput))
+                    {
+                        responseData = "Vui lòng cung cấp một URL YouTube hợp lệ để trích xuất công thức.";
+                        responseType = "error";
+                        break;
+                    }
+                    var recipeInfo = await _foodAssistantService.ExtractRecipeFromYouTubeVideoAsync(request.UserInput);
+                    if (recipeInfo != null)
+                    {
+                        responseData = recipeInfo;
+                        responseType = "recipeInfo";
+                    }
+                    else
+                    {
+                        responseData = "Không thể trích xuất công thức từ URL được cung cấp. Video có thể không chứa công thức rõ ràng, hoặc transcript không có sẵn/không phù hợp.";
+                        responseType = "error";
+                    }
+                    break;
+
+                case "getSuggestion":
+                default: // Default to suggestion if action is unknown or not provided
+                    var suggestion = await _foodAssistantService.GetInteractiveFoodSuggestionAsync(request.UserInput, history);
+                    responseData = suggestion;
+                    responseType = "suggestion";
+                    break;
+            }
+            return Ok(new { SessionId = sessionId, ResponseType = responseType, Data = responseData });
         }
 
-        // POST api/FoodAssistant/get-transcript
-        [HttpPost("get-transcript")]
-        public async Task<IActionResult> GetTranscript([FromBody] VideoUrlRequest request)
+        private string DetermineActionFromInput(string userInput)
         {
-            if (request == null || string.IsNullOrWhiteSpace(request.VideoUrl))
+            if (IsValidYouTubeUrl(userInput))
             {
-                return BadRequest("Video URL is required.");
+                return "extractRecipeViaUrl";
             }
-
-            // Hiện tại chỉ hỗ trợ YouTube
-            if (!request.VideoUrl.Contains("youtube.com") && !request.VideoUrl.Contains("youtu.be"))
-            {
-                return BadRequest("Chỉ hỗ trợ lấy transcript từ URL YouTube ở thời điểm hiện tại.");
-            }
-
-            var transcript = await _foodAssistantService.GetTranscriptFromYouTubeUrlAsync(request.VideoUrl);
-
-            if (transcript == null || transcript.StartsWith("Lỗi khi lấy transcript") || transcript == "Không tìm thấy phụ đề cho video này.")
-            {
-                return NotFound(transcript ?? "Không thể lấy transcript từ URL được cung cấp.");
-            }
-
-            return Ok(new { Transcript = transcript });
+            return "getSuggestion";
         }
 
-        // POST api/FoodAssistant/extract-recipe
-        [HttpPost("extract-recipe")]
-        public async Task<IActionResult> ExtractRecipe([FromBody] ExtractRecipeRequest request)
+        private bool IsValidYouTubeUrl(string url)
         {
-            if (request == null || string.IsNullOrWhiteSpace(request.VideoTranscript))
-            {
-                return BadRequest("Video transcript is required.");
-            }
-
-            var recipeInfo = await _foodAssistantService.ExtractRecipeFromVideoTranscriptAsync(request.VideoTranscript);
-
-            if (recipeInfo == null)
-            {
-                return NotFound("Could not extract recipe information from the provided transcript.");
-            }
-
-            return Ok(recipeInfo);
+            if (string.IsNullOrWhiteSpace(url)) return false;
+            // Simple regex for YouTube URLs (can be made more comprehensive)
+            return Regex.IsMatch(url, @"^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)");
         }
     }
 
-    // DTOs cho request bodies
-    public class FoodSuggestionRequest
+    public class ChatMessageRequest // New DTO for combined requests
     {
-        public string? SessionId { get; set; } // Để duy trì ngữ cảnh hội thoại
+        public string? SessionId { get; set; }
         public string UserInput { get; set; } = string.Empty;
+        public string? ActionType { get; set; } // e.g., "getSuggestion", "extractRecipeViaUrl"
     }
 
-    public class ExtractRecipeRequest
-    {
-        public string VideoTranscript { get; set; } = string.Empty;
-    }
-
-    public class VideoUrlRequest // DTO mới cho request URL video
-    {
-        public string VideoUrl { get; set; } = string.Empty;
-    }
+    // Removed FoodSuggestionRequest, ExtractRecipeRequest, VideoUrlRequest as they are replaced by ChatMessageRequest
 }
