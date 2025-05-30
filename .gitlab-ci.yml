@@ -80,5 +80,6 @@ deploy_to_plesk_branch:
     - echo "Pushing to plesk-deploy branch..."
     - git push -f "${DEPLOY_REPO_URL}" plesk-deploy
 
+
   dependencies:
     - build # Đảm bảo job này chạy sau và sử dụng artifacts từ job 'build'
