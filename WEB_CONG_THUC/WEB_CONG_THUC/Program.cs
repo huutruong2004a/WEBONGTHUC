@@ -35,6 +35,7 @@ builder.Services.AddControllersWithViews();
 // Thêm đăng ký cho IRecipeRepository và RecipeRepository
 builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 builder.Services.AddScoped<IVideoRepository, VideoRepository>();
+builder.Services.AddScoped<WEB_CONG_THUC.Services.GeminiFoodAssistantService>();
 builder.Services.AddLogging();
 builder.Services.AddAuthentication()
     .AddCookie(options =>

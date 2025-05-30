@@ -62,7 +62,8 @@
                             </div>
                             <div class="stat-item">
                                 <i class="fas fa-star"></i>
-                                <span>@(Model.Reviews?.Any() == true ? Model.Reviews.Average(r => r.Rating).ToString("F1") : "N/A")</span>
+                                <span>@(Model.Reviews?.Any() == true ? Model.Reviews.Average(r =>
+                                                                        r.Rating).ToString("F1") : "N/A")</span>
                             </div>
                         </div>
                     </div>
@@ -135,15 +136,17 @@
                         @if (!string.IsNullOrEmpty(Model.Ingredients))
                         {
                             <span class="item-count">
-                                @Model.Ingredients.Replace("\\n", "\n").Split('\n', StringSplitOptions.RemoveEmptyEntries).Length món
-                            </span>
-                        }
+                                @Model.Ingredients.Replace("\\n", "\n").Split('\n',
+                                StringSplitOptions.RemoveEmptyEntries).Length món
+                        </span>
+                                                }
                     </div>
                     <div class="card-content">
                         @if (!string.IsNullOrEmpty(Model.Ingredients))
                         {
                             <div class="ingredients-list">
-                                @foreach (var ingredient in Model.Ingredients.Replace("\\n", "\n").Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                                @foreach (var ingredient in Model.Ingredients.Replace("\\n", "\n").Split('\n',
+                                                            StringSplitOptions.RemoveEmptyEntries))
                                 {
                                     <div class="ingredient-item">
                                         <i class="fas fa-check"></i>
@@ -166,16 +169,18 @@
                         @if (!string.IsNullOrEmpty(Model.Instructions))
                         {
                             <span class="item-count">
-                                @Model.Instructions.Replace("\\n", "\n").Split('\n', StringSplitOptions.RemoveEmptyEntries).Length bước
-                            </span>
-                        }
+                                @Model.Instructions.Replace("\\n", "\n").Split('\n',
+                                StringSplitOptions.RemoveEmptyEntries).Length bước
+                        </span>
+                                                }
                     </div>
                     <div class="card-content">
                         @if (!string.IsNullOrEmpty(Model.Instructions))
                         {
                             <div class="instructions-list">
                                 @{
-                                    var instructions = Model.Instructions.Replace("\\n", "\n").Split('\n', StringSplitOptions.RemoveEmptyEntries);
+                                    var instructions = Model.Instructions.Replace("\\n", "\n").Split('\n',
+                                    StringSplitOptions.RemoveEmptyEntries);
                                 }
                                 @for (int i = 0; i < instructions.Length; i++)
                                 {
@@ -243,7 +248,7 @@
                     <div class="card-content">
                         <div class="action-buttons">
                             @if (User.Identity != null && User.Identity.IsAuthenticated &&
-                            User.FindFirstValue(ClaimTypes.NameIdentifier) == Model.UserId)
+                                                        User.FindFirstValue(ClaimTypes.NameIdentifier) == Model.UserId)
                             {
                                 <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-action edit">
                                     <i class="fas fa-edit"></i>
@@ -307,7 +312,7 @@
                     <i class="fas fa-comments"></i>
                     Đánh giá & Bình luận
                 </h2>
-                <span class="review-count">@Model.Reviews.Count đánh giá</span>
+                <span class="review-count">@(Model.Reviews?.Count ?? 0) đánh giá</span>
             </div>
 
             <!-- Add Review Form -->
@@ -341,7 +346,7 @@
                             <div class="form-group">
                                 <label for="Comment" class="form-label">Bình luận</label>
                                 <textarea name="Comment" class="form-textarea" rows="4"
-                                          placeholder="Chia sẻ trải nghiệm của bạn về công thức này..." required></textarea>
+                                placeholder="Chia sẻ trải nghiệm của bạn về công thức này..." required></textarea>
                             </div>
 
                             <button type="submit" class="btn-submit">
@@ -358,7 +363,7 @@
                     <i class="fas fa-sign-in-alt"></i>
                     <p>
                         <a asp-controller="Account" asp-action="Login"
-                           asp-route-returnUrl="@Url.Action("Details", "Recipes", new { id = Model.Id })">
+                            asp-route-returnUrl="@Url.Action("Details", "Recipes", new { id = Model.Id })">
                             Đăng nhập
                         </a>
                         để để lại đánh giá và bình luận
