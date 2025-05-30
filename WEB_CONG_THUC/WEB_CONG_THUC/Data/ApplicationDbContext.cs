@@ -14,6 +14,8 @@ public class ApplicationDbContext : IdentityDbContext
     public DbSet<Category> Categories { get; set; }
     public DbSet<Blog> Blogs { get; set; }
     public DbSet<Recipe> Recipes { get; set; }
+    public DbSet<RecipeReview> RecipeReviews { get; set; }
+    public DbSet<RecipeFavorite> RecipeFavorites { get; set; }
 
     public DbSet<Video> Videos { get; set; }
     public DbSet<VideoFavorite> VideoFavorites { get; set; }
@@ -46,6 +48,13 @@ public class ApplicationDbContext : IdentityDbContext
             .HasForeignKey(vf => vf.VideoId)
             .OnDelete(DeleteBehavior.Cascade); // giữ lại cascade với Video nếu bạn muốn
 
+        modelBuilder.Entity<Video>() // Cấu hình cho Video và Category
+            .HasOne(v => v.Category) 
+            .WithMany() // Nếu Category không có navigation property ngược lại là ICollection<Video>
+            .HasForeignKey(v => v.CategoryId)
+            .OnDelete(DeleteBehavior.SetNull) // Nếu Category bị xóa, CategoryId trong Video sẽ thành null
+            .IsRequired(false); // CategoryId là optional
+
         modelBuilder.Entity<Recipe>()
             .HasOne(r => r.User)
             .WithMany()
@@ -57,6 +66,23 @@ public class ApplicationDbContext : IdentityDbContext
             .WithMany()
             .HasForeignKey(r => r.UserId)
             .OnDelete(DeleteBehavior.NoAction);
+
+        // Cấu hình cho RecipeFavorite
+        modelBuilder.Entity<RecipeFavorite>()
+            .HasIndex(rf => new { rf.UserId, rf.RecipeId })
+            .IsUnique();
+
+        modelBuilder.Entity<RecipeFavorite>()
+            .HasOne(rf => rf.User)
+            .WithMany()
+            .HasForeignKey(rf => rf.UserId)
+            .OnDelete(DeleteBehavior.NoAction); // Ngăn chặn cascade delete từ User
+
+        modelBuilder.Entity<RecipeFavorite>()
+            .HasOne(rf => rf.Recipe)
+            .WithMany(r => r.Favorites) 
+            .HasForeignKey(rf => rf.RecipeId)
+            .OnDelete(DeleteBehavior.Cascade); // Cho phép cascade delete từ Recipe
 
         // Seed dữ liệu Categories
         modelBuilder.Entity<Category>().HasData(

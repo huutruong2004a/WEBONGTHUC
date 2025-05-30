@@ -39,36 +39,35 @@ namespace WEB_CONG_THUC.Controllers
 
         }
 
-        public async Task<IActionResult> Index(int? recipeId, string searchString)
+        public async Task<IActionResult> Index(int? categoryId, string? searchString, int? recipeId) // Thêm recipeId nhưng không dùng nữa
         {
             try
             {
-                // Lấy danh sách video đã được duyệt (Approved)
-                var videosQuery = recipeId.HasValue
-                    ? await _videoRepository.GetVideosByRecipeAsync(recipeId.Value)
-                    : await _videoRepository.GetAllAsync();
+                var videosQuery = _context.Videos
+                                        .Include(v => v.User)
+                                        .Include(v => v.Recipe) // Vẫn include Recipe nếu bạn muốn hiển thị thông tin Recipe
+                                        .Include(v => v.Category) // Include Category
+                                        .Where(v => v.Status == VideoStatus.Approved)
+                                        .AsQueryable();
 
-                // Lọc chỉ lấy video đã được duyệt
-                videosQuery = videosQuery.Where(v => v.Status == VideoStatus.Approved);
-
-                // Lấy danh sách công thức cho dropdown
-                var recipes = await _recipeRepository.GetAllAsync();
-                ViewBag.Recipes = new SelectList(recipes, "Id", "Title", recipeId);
-
-                // Lấy thông tin công thức hiện tại nếu có
-                if (recipeId.HasValue)
+                if (categoryId.HasValue)
                 {
-                    var recipe = await _recipeRepository.GetByIdAsync(recipeId.Value);
-                    ViewBag.CurrentRecipe = recipe;
+                    videosQuery = videosQuery.Where(v => v.CategoryId == categoryId.Value);
                 }
 
-                // Lọc theo từ khóa tìm kiếm nếu có
                 if (!string.IsNullOrEmpty(searchString))
                 {
                     videosQuery = videosQuery.Where(v =>
                         v.Title.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
-                        v.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase));
+                        (v.Description != null && v.Description.Contains(searchString, StringComparison.OrdinalIgnoreCase)) || 
+                        (v.User != null && v.User.UserName != null && v.User.UserName.Contains(searchString, StringComparison.OrdinalIgnoreCase)) ||
+                        (v.Category != null && v.Category.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))); // Tìm kiếm theo tên Category
                 }
+
+                // Lấy danh sách Categories cho dropdown
+                var categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+                ViewBag.Categories = new SelectList(categories, "Id", "Name", categoryId);
+                ViewBag.SelectedCategoryId = categoryId;
 
                 // Lấy danh sách video yêu thích của người dùng hiện tại
                 if (User.Identity!.IsAuthenticated)
@@ -102,6 +101,8 @@ namespace WEB_CONG_THUC.Controllers
             {               
                 var video = await _context.Videos
                     .Include(v => v.Recipe)
+                    .Include(v => v.User) 
+                    .Include(v => v.Category) // Đảm bảo Category được tải
                     .Include(v => v.Comments)
                     .ThenInclude(c => c.User)
                     .FirstOrDefaultAsync(v => v.Id == id);
@@ -143,54 +144,68 @@ namespace WEB_CONG_THUC.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> AddComment(int videoId, string content)
+        public async Task<IActionResult> AddComment(int videoId, string? content, int rating, string returnUrl)
         {
-            if (string.IsNullOrEmpty(content))
+            // Allow empty comment if rating is provided
+            if (string.IsNullOrWhiteSpace(content) && rating == 0)
             {
-                return BadRequest();
+                TempData["ErrorMessage"] = "Nội dung bình luận hoặc đánh giá không được để trống.";
+                return Redirect(returnUrl ?? Url.Action("Details", new { id = videoId })!);
             }
 
             var userId = _userManager.GetUserId(User);
+            if (userId == null)
+            {
+                return Challenge(); // Should not happen if [Authorize] is working
+            }
 
             var comment = new VideoComment
             {
                 VideoId = videoId,
-                UserId = userId!,
-                Content = content,
+                UserId = userId,
+                Content = content ?? string.Empty, // Handle potentially null content
+                Rating = rating,
                 CreatedAt = DateTime.Now
             };
 
-            _context.VideoComments.Add(comment);
-            await _context.SaveChangesAsync();
+            _context.VideoComments.Add(comment); // Use _context to add comment
+            await _context.SaveChangesAsync(); // Save changes to the database
 
-            // Chuyển hướng về trang Details của video hiện tại
-            return RedirectToAction(nameof(Details), new { id = videoId });
+            TempData["SuccessMessage"] = "Bình luận của bạn đã được gửi.";
+            return Redirect(returnUrl ?? Url.Action("Details", new { id = videoId })!);
         }
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> ToggleFavorite(int videoId)
+        [ValidateAntiForgeryToken] 
+        public async Task<IActionResult> ToggleFavorite([FromBody] ToggleFavoriteRequest request)
         {
             try
             {
                 var userId = _userManager.GetUserId(User);
                 if (string.IsNullOrEmpty(userId))
                 {
-                    return Unauthorized();
+                    return Unauthorized(new { success = false, message = "Người dùng không được ủy quyền." });
                 }
 
-                var result = await _videoRepository.ToggleFavoriteAsync(videoId, userId);
-                return Json(new { success = result });
+                if (request == null)
+                {
+                    _logger.LogWarning("ToggleFavorite được gọi với request null.");
+                    return BadRequest(new { success = false, error = "Yêu cầu không hợp lệ." });
+                }
+
+                var result = await _videoRepository.ToggleFavoriteAsync(request.VideoId, userId);
+                return Json(new { success = true, isFavorited = result });
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error in ToggleFavorite: {ex.Message}");
-                return Json(new { success = false, error = "Có lỗi xảy ra" });
+                _logger.LogError(ex, "Lỗi trong ToggleFavorite cho VideoId: {VideoId}", request?.VideoId);
+                return Json(new { success = false, error = "Đã xảy ra lỗi khi thay đổi trạng thái yêu thích." });
             }
         }
 
         [Authorize]
-        public async Task<IActionResult> MyFavorites()
+        public async Task<IActionResult> MyFavoriteVideos() // Đổi tên từ MyFavorites
         {
             try
             {
@@ -201,11 +216,11 @@ namespace WEB_CONG_THUC.Controllers
                 }
 
                 var videos = await _videoRepository.GetFavoritesByUserIdAsync(userId);
-                return View(videos);
+                return View(videos); // View này sẽ là MyFavoriteVideos.cshtml
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error in MyFavorites: {ex.Message}");
+                _logger.LogError($"Error in MyFavoriteVideos: {ex.Message}");
                 return View("Error");
             }
         }
@@ -225,15 +240,17 @@ namespace WEB_CONG_THUC.Controllers
         }
 
         [Authorize]
-        public IActionResult Create()
+        public async Task<IActionResult> Create() // Sửa GET Create thành async
         {
-            return View(new VideoCreateViewModel());
+            var viewModel = new VideoCreateViewModel();
+            ViewBag.Categories = new SelectList(await _context.Categories.OrderBy(c => c.Name).ToListAsync(), "Id", "Name");
+            return View(viewModel);
         }
 
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(VideoCreateViewModel model)
+        public async Task<IActionResult> Create(VideoCreateViewModel model) // Sửa POST Create
         {
             if (ModelState.IsValid)
             {
@@ -245,7 +262,8 @@ namespace WEB_CONG_THUC.Controllers
                     CreatedAt = DateTime.Now,
                     Status = VideoStatus.Pending,
                     Slug = SlugHelper.GenerateSlug(model.Title),
-                    UploadType = model.UploadType
+                    UploadType = model.UploadType,
+                    CategoryId = model.CategoryId // Lưu CategoryId
                 };
 
                 if (model.UploadType == VideoUploadType.Url)
@@ -286,6 +304,8 @@ namespace WEB_CONG_THUC.Controllers
                     return RedirectToAction("SubmissionSuccess");
                 }
             }
+            // Nếu ModelState không hợp lệ, tải lại danh sách Categories
+            ViewBag.Categories = new SelectList(await _context.Categories.OrderBy(c => c.Name).ToListAsync(), "Id", "Name", model.CategoryId);
             return View(model);
         }
 
@@ -367,14 +387,17 @@ namespace WEB_CONG_THUC.Controllers
             // Tạo tên file độc nhất
             string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
 
-            // Đảm bảo thư mục tồn tại
-            string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "videos");
+            // Đường dẫn đến thư mục wwwroot gốc của dự án
+            string sourceWwwRoot = Path.Combine(_webHostEnvironment.ContentRootPath, "wwwroot");
+            string uploadsFolder = Path.Combine(sourceWwwRoot, "videos");
+
+            // Đảm bảo thư mục tồn tại trong wwwroot gốc
             if (!Directory.Exists(uploadsFolder))
             {
                 Directory.CreateDirectory(uploadsFolder);
             }
 
-            // Đường dẫn đầy đủ đến file
+            // Đường dẫn đầy đủ đến file trong wwwroot gốc
             string filePath = Path.Combine(uploadsFolder, fileName);
 
             // Lưu file
@@ -389,7 +412,18 @@ namespace WEB_CONG_THUC.Controllers
         private async Task<string> SaveThumbnailFile(IFormFile file)
         {
             string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-            string filePath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "videos", fileName);
+            
+            // Đường dẫn đến thư mục wwwroot gốc của dự án
+            string sourceWwwRoot = Path.Combine(_webHostEnvironment.ContentRootPath, "wwwroot");
+            string targetFolder = Path.Combine(sourceWwwRoot, "images", "videos");
+
+            // Đảm bảo thư mục tồn tại trong wwwroot gốc
+            if (!Directory.Exists(targetFolder))
+            {
+                Directory.CreateDirectory(targetFolder);
+            }
+
+            string filePath = Path.Combine(targetFolder, fileName);
 
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
@@ -424,20 +458,22 @@ namespace WEB_CONG_THUC.Controllers
             if (video == null)
                 return NotFound();
 
-            // Xóa file video nếu là video upload
+            string sourceWwwRoot = Path.Combine(_webHostEnvironment.ContentRootPath, "wwwroot");
+
+            // Xóa file video nếu là video upload từ wwwroot gốc
             if (video.UploadType != VideoUploadType.Url && !string.IsNullOrEmpty(video.VideoUrl))
             {
-                var videoPath = Path.Combine(_webHostEnvironment.WebRootPath, video.VideoUrl.TrimStart('/'));
+                var videoPath = Path.Combine(sourceWwwRoot, video.VideoUrl.TrimStart('/'));
                 if (System.IO.File.Exists(videoPath))
                 {
                     System.IO.File.Delete(videoPath);
                 }
             }
 
-            // Xóa thumbnail nếu có
+            // Xóa thumbnail nếu có từ wwwroot gốc
             if (!string.IsNullOrEmpty(video.ThumbnailUrl) && !video.ThumbnailUrl.StartsWith("http"))
             {
-                var thumbnailPath = Path.Combine(_webHostEnvironment.WebRootPath, video.ThumbnailUrl.TrimStart('/'));
+                var thumbnailPath = Path.Combine(sourceWwwRoot, video.ThumbnailUrl.TrimStart('/'));
                 if (System.IO.File.Exists(thumbnailPath))
                 {
                     System.IO.File.Delete(thumbnailPath);

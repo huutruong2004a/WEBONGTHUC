@@ -1,19 +1,27 @@
 ﻿@model ErrorViewModel
 @{
-    ViewData["Title"] = "Error";
+    ViewData["Title"] = "Lỗi"; // Sửa Title cho thân thiện hơn
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<h1 class="text-danger">Đã xảy ra lỗi.</h1>
+<h2 class="text-danger">Một lỗi không mong muốn đã xảy ra trong quá trình xử lý yêu cầu của bạn.</h2>
 
-@if (Model.ShowRequestId)
+@if (Model != null && Model.ShowRequestId) // Thêm kiểm tra Model != null
 {
     <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
+        <strong>Mã yêu cầu (Request ID):</strong> <code>@Model.RequestId</code>
     </p>
 }
 
-<h3>Development Mode</h3>
+@if (ViewData["ErrorMessage"] != null) // Hiển thị thông báo lỗi tùy chỉnh nếu có
+{
+    <div class="alert alert-danger mt-3">
+        <p><strong>Thông tin lỗi chi tiết:</strong></p>
+        <p>@ViewData["ErrorMessage"]</p>
+    </div>
+}
+
+<h3>Chế độ phát triển (Development Mode)</h3>
 <p>
     Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
 </p>
