@@ -1,7 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
-
+<link href="~/css/user-nav.css" rel="stylesheet" />
 <div class="user-nav">
     @if (SignInManager.IsSignedIn(User))
     {
@@ -81,34 +81,4 @@
         </ul>
     }
 </div>
-
-@* Xóa đoạn CSS tùy chỉnh cho hover dropdown đã thêm ở lần trước, vì Bootstrap JS sẽ xử lý click 
-<style>
-    .user-dropdown-content .dropdown-hover .dropdown-menu-hover {
-        display: none;
-        position: absolute;
-        left: 100%; 
-        top: 0; 
-        background-color: #fff;
-        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-        z-index: 1;
-        min-width: 200px; 
-    }
-
-    .user-dropdown-content .dropdown-hover:hover .dropdown-menu-hover {
-        display: block;
-    }
-
-    .user-dropdown-content .dropdown-hover > .nav-link {
-        display: flex;
-        align-items: center;
-        justify-content: space-between; 
-    }
-    .user-dropdown-content .dropdown-hover > .nav-link::after {
-        content: "\f0da"; 
-        font-family: "Font Awesome 5 Free";
-        font-weight: 900;
-        margin-left: .5em;
-    }
-</style>
-*@
+<script src="~/js/user-nav.js"></script>
