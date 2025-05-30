@@ -12,9 +12,9 @@ build:
   image: mcr.microsoft.com/dotnet/sdk:9.0 # Sử dụng image SDK .NET, thay đổi phiên bản nếu cần
   script:
     - echo "Restoring NuGet packages..."
-    - dotnet restore $PROJECT_NAME/$PROJECT_NAME.csproj # <-- CHỈNH SỬA DÒNG NÀY
+    - dotnet restore $PROJECT_NAME/$PROJECT_NAME/$PROJECT_NAME.csproj # <-- CHỈNH SỬA DÒNG NÀY
     - echo "Building and publishing the project..."
-    - dotnet publish $PROJECT_NAME/$PROJECT_NAME.csproj -c Release -o $BUILD_OUTPUT_DIR --no-restore
+    - dotnet publish $PROJECT_NAME/$PROJECT_NAME/$PROJECT_NAME.csproj -c Release -o $BUILD_OUTPUT_DIR --no-restore
   artifacts:
     paths:
       - $BUILD_OUTPUT_DIR/ # Lưu trữ thư mục publish_output làm artifacts
