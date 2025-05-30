@@ -1,27 +1,8 @@
-stages:
-  - build
-  - deploy_to_plesk_branch
-
-variables:
-  PROJECT_NAME: WEB_CONG_THUC
-  BUILD_OUTPUT_DIR: publish_output
-
-build:
-  stage: build
-  image: mcr.microsoft.com/dotnet/sdk:9.0
-  script:
-    - echo "Restoring NuGet packages..."
-    - dotnet restore "$PROJECT_NAME/$PROJECT_NAME/$PROJECT_NAME.csproj"
-    - echo "Building and publishing the project..."
-    - dotnet publish "$PROJECT_NAME/$PROJECT_NAME/$PROJECT_NAME.csproj" -c Release -o "$BUILD_OUTPUT_DIR" --no-restore
-  artifacts:
-    paths:
-      - $BUILD_OUTPUT_DIR/
-    expire_in: 1 hour
-
 deploy_to_plesk_branch:
   stage: deploy_to_plesk_branch
-  image: alpine/git
+  image: alpine:latest # Dùng alpine base
+  before_script:
+    - apk add --no-cache git # Cài git trong Alpine
   only:
     - develop
   script:
