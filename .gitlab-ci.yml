@@ -4,25 +4,17 @@ stages:
 
 variables:
   PROJECT_NAME: WEB_CONG_THUC # Tên dự án .NET của bạn
-  PROJECT_ROOT_IN_REPO: web_cong_thuc/WEB_CONG_THUC # Cấu trúc thư mục dự án
   BUILD_OUTPUT_DIR: publish_output # Thư mục chứa các file đã publish
 
 # Job để build và publish ứng dụng .NET
 build:
   stage: build
-  image: mcr.microsoft.com/dotnet/sdk:9.0
+  image: mcr.microsoft.com/dotnet/sdk:9.0 # Sử dụng image SDK .NET, thay đổi phiên bản nếu cần
   script:
-    - echo "Navigating to project directory: $PROJECT_ROOT_IN_REPO"
-    - cd $PROJECT_ROOT_IN_REPO
-    - echo "Current directory after cd: $(pwd)"
-    - echo "Listing contents of current directory:"
-    - ls -la
     - echo "Restoring NuGet packages..."
-    - dotnet restore
+    - dotnet restore $PROJECT_NAME/$PROJECT_NAME/$PROJECT_NAME.csproj
     - echo "Building and publishing the project..."
-    - dotnet publish -c Release -o ../../$BUILD_OUTPUT_DIR --no-restore
-    - echo "Contents of published output directory:"
-    - ls -R ../../$BUILD_OUTPUT_DIR
+    - dotnet publish $PROJECT_NAME/$PROJECT_NAME/$PROJECT_NAME.csproj -c Release -o $BUILD_OUTPUT_DIR --no-restore
   artifacts:
     paths:
       - $BUILD_OUTPUT_DIR/
@@ -34,28 +26,27 @@ deploy_to_plesk_branch:
   image: alpine/git
   only:
     - develop
-  script: | # <-- Đảm bảo dòng này và các dòng sau được gõ lại thủ công
-    set -ex # <--- THÊM DÒNG NÀY ĐỂ DEBUG CHI TIẾT
+  script:
+    - echo "Configuring Git for deployment..."
+    - git config user.name "GitLab CI/CD Deployer"
+    - git config user.email "gitlab-ci@example.com"
+    
+    - echo "Cloning and preparing deploy branch..."
+    - git clone --depth 1 "https://gitlab-ci-token:${GITLAB_DEPLOY_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git" deploy_temp_repo
+    - cd deploy_temp_repo
+    - git checkout -B plesk-deploy
 
-    echo "Configuring Git for deployment..."
-    git config user.name "GitLab CI/CD Deployer"
-    git config user.email "gitlab-ci@example.com"
+    - echo "Cleaning existing files in deploy branch..."
+    - find . -maxdepth 1 -not -name '.git' -not -name '.gitlab-ci.yml' -exec rm -rf {} +
 
-    echo "Cloning and preparing deploy branch..."
-    git clone --depth 1 "https://gitlab-ci-token:${GITLAB_DEPLOY_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git" deploy_temp_repo
-    cd deploy_temp_repo
-    git checkout -B plesk-deploy
+    - echo "Copying published artifacts..."
+    - cp -r ../$BUILD_OUTPUT_DIR/. .
 
-    echo "Cleaning existing files in deploy branch..."
-    find . -maxdepth 1 -not -name '.git' -not -name '.gitlab-ci.yml' -exec rm -rf {} +
+    - echo "Adding changes and committing..."
+    - git add .
+    - git commit -m "CI/CD: Auto-deploying from $CI_COMMIT_SHORT_SHA" || true
 
-    echo "Copying published artifacts..."
-    cp -r ../$BUILD_OUTPUT_DIR/. .
-
-    echo "Adding changes and committing..."
-    git add .
-    git commit -m "CI/CD: Auto-deploying from $CI_COMMIT_SHORT_SHA" || true
-    echo "Pushing to plesk-deploy branch..."
-    git push -f "https://gitlab-ci-token:${GITLAB_DEPLOY_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git" plesk-deploy
+    - echo "Pushing to plesk-deploy branch..."
+    - git push -f "https://gitlab-ci-token:${GITLAB_DEPLOY_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git" plesk-deploy
   dependencies:
     - build
