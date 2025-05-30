@@ -12,7 +12,7 @@ variables:
 
 build:
   stage: build
-  image: mcr.microsoft.com/dotnet/sdk:8.0 # Sử dụng SDK 8.0, hoặc 7.0, 6.0 tùy dự án của bạn. 9.0 là preview.
+  image: mcr.microsoft.com/dotnet/sdk:9.0 # Sử dụng SDK 8.0, hoặc 7.0, 6.0 tùy dự án của bạn. 9.0 là preview.
   script:
     - echo "Restoring NuGet packages for ${PROJECT_NAME}..."
     # Giả sử cấu trúc thư mục của bạn là:
