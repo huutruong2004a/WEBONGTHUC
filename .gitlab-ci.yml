@@ -5,81 +5,100 @@ stages:
 variables:
   PROJECT_NAME: WEB_CONG_THUC
   BUILD_OUTPUT_DIR: publish_output
+  # URL Repository cho SSH. Thay đổi nếu server GitLab của bạn khác gitlab.com
+  GIT_SSH_REPO_URL: "git@${CI_SERVER_HOST}:${CI_PROJECT_PATH}.git"
+  PLESK_DEPLOY_BRANCH: plesk-deploy # Tên nhánh mà Plesk sẽ kéo về
 
 build:
   stage: build
-  image: mcr.microsoft.com/dotnet/sdk:9.0 # Image để build dự án .NET 9
+  image: mcr.microsoft.com/dotnet/sdk:9.0 # Hoặc phiên bản .NET SDK bạn đang dùng
   script:
     - echo "Restoring NuGet packages for ${PROJECT_NAME}..."
-    # KIỂM TRA KỸ ĐƯỜNG DẪN NÀY!
-    # Nếu file .csproj của bạn là WEB_CONG_THUC/WEB_CONG_THUC.csproj
-    # thì đổi thành: - dotnet restore "${PROJECT_NAME}/${PROJECT_NAME}.csproj"
+    # Đảm bảo đường dẫn đến file .csproj của bạn là chính xác!
     - dotnet restore "${PROJECT_NAME}/${PROJECT_NAME}/${PROJECT_NAME}.csproj"
     - echo "Building and publishing the project ${PROJECT_NAME}..."
     - dotnet publish "${PROJECT_NAME}/${PROJECT_NAME}/${PROJECT_NAME}.csproj" -c Release -o "${BUILD_OUTPUT_DIR}" --no-restore
   artifacts:
     paths:
-      - "${BUILD_OUTPUT_DIR}/" # Lưu trữ output để job sau sử dụng
+      - "${BUILD_OUTPUT_DIR}/"
     expire_in: 1 hour
 
 deploy_to_plesk_branch:
   stage: deploy_to_plesk_branch
-  image:
-    name: alpine/git:latest       # Sử dụng image chứa git
-    entrypoint: ["/bin/sh", "-c"] # QUAN TRỌNG: Ghi đè entrypoint để các lệnh script được chạy bởi shell
+  # Sử dụng image có sẵn git và openssh-client
+  image: alpine/git:latest
+  # Hoặc bạn có thể dùng alpine:latest và cài đặt:
+  # image: alpine:latest
+  # before_script:
+  #   - apk add --no-cache git openssh-client bash
   only:
-    - develop # Chỉ chạy job này khi có commit lên nhánh develop
-  script:
-    # Các lệnh này giờ sẽ được thực thi bởi /bin/sh bên trong container alpine/git
-    - echo "Configuring Git for deployment..."
-    - git config --global user.name "GitLab CI/CD Deployer"
-    - git config --global user.email "gitlab-ci@${CI_SERVER_HOST}" # Sử dụng biến môi trường của GitLab
+    - develop # Chỉ chạy khi có commit vào nhánh develop
+  before_script:
+    - echo "Starting SSH agent setup..."
+    # Đảm bảo openssh-client đã được cài đặt (alpine/git thường có sẵn)
+    # - apk update && apk add --no-cache openssh-client git # Bỏ comment nếu dùng image alpine:latest cơ bản
 
-    # Đảm bảo bạn đã tạo biến GITLAB_DEPLOY_TOKEN trong Settings > CI/CD > Variables của project trên GitLab
-    # và nó có quyền write_repository.
-    - DEPLOY_REPO_URL="https://gitlab-ci-token:${GITLAB_DEPLOY_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
-
-    - | # Kiểm tra xem GITLAB_DEPLOY_TOKEN có được thiết lập không
-      if [ -z "${GITLAB_DEPLOY_TOKEN}" ]; then
-        echo "LỖI: Biến GITLAB_DEPLOY_TOKEN chưa được thiết lập trong CI/CD Variables."
-        echo "Vui lòng vào Settings > CI/CD > Variables của project để tạo."
+    # Kiểm tra biến SSH_PRIVATE_KEY (loại File)
+    - |
+      if [ -z "${SSH_PRIVATE_KEY}" ]; then
+        echo "LỖI: Biến SSH_PRIVATE_KEY (loại File) chưa được thiết lập trong CI/CD Variables."
+        exit 1
+      elif [ ! -f "${SSH_PRIVATE_KEY}" ]; then
+        echo "LỖI: Biến SSH_PRIVATE_KEY được thiết lập nhưng không trỏ tới một file hợp lệ."
+        echo "Hãy đảm bảo bạn đã chọn Type là 'File' cho biến SSH_PRIVATE_KEY."
         exit 1
       fi
+    
+    - eval $(ssh-agent -s)
+    - chmod 600 "${SSH_PRIVATE_KEY}" # GitLab runner sẽ đặt file này ở một đường dẫn tạm
+    - ssh-add "${SSH_PRIVATE_KEY}"
 
-    - echo "Cloning repository to a temporary directory..."
-    - rm -rf deploy_temp_repo # Xóa thư mục tạm nếu đã tồn tại từ lần chạy trước
+    - echo "Configuring SSH known_hosts..."
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - |
+      if [ -n "${SSH_KNOWN_HOSTS}" ]; then
+        echo "${SSH_KNOWN_HOSTS}" > ~/.ssh/known_hosts
+        chmod 644 ~/.ssh/known_hosts
+        echo "SSH known_hosts configured."
+      else
+        echo "CẢNH BÁO: Biến SSH_KNOWN_HOSTS không được thiết lập."
+        echo "Sẽ cố gắng kết nối mà không xác minh host key (có thể không an toàn hoặc yêu cầu tương tác nếu host chưa từng được kết nối)."
+        # Để tự động chấp nhận host key (ít an toàn hơn, chỉ dùng nếu bạn hiểu rõ rủi ro):
+        # echo -e "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null" > ~/.ssh/config
+        # Hoặc quét key một lần (có thể thất bại nếu có tương tác):
+        # ssh-keyscan "${CI_SERVER_HOST}" >> ~/.ssh/known_hosts
+      fi
+  script:
+    - echo "Configuring Git user..."
+    - git config --global user.name "GitLab CI/CD Deployer"
+    - git config --global user.email "gitlab-ci@${CI_SERVER_HOST}" # Hoặc một email bất kỳ
+
+    - echo "Cloning repository to a temporary directory using SSH: ${GIT_SSH_REPO_URL}"
+    - rm -rf deploy_temp_repo # Xóa thư mục cũ nếu có
     - mkdir deploy_temp_repo
     - cd deploy_temp_repo
 
     - echo "Cloning deploy branch or initializing new one..."
-    # Clone chỉ nhánh đích (nếu đã tồn tại) hoặc clone rỗng rồi tạo nhánh
-    - git clone --depth 1 "${DEPLOY_REPO_URL}" . # Clone vào thư mục hiện tại (deploy_temp_repo)
-    - git checkout -B plesk-deploy # Tạo nhánh mới 'plesk-deploy' hoặc chuyển sang nếu đã tồn tại
+    - git clone --depth 1 "${GIT_SSH_REPO_URL}" .
+    - git checkout -B "${PLESK_DEPLOY_BRANCH}" # Tạo nhánh mới hoặc chuyển sang nếu đã có
 
     - echo "Cleaning existing files in deploy branch (except .git folder)..."
-    # Xóa tất cả các file và thư mục cũ TRỪ thư mục .git
-    # ls -A liệt kê cả file ẩn (trừ . và ..), grep loại trừ .git, xargs rm -rf
-    - ls -A | grep -v -E '^\.git$' | xargs rm -rf || true # || true để không lỗi nếu không có gì để xóa
+    - ls -A | grep -v -E '^\.git$' | xargs rm -rf || true
 
     - echo "Copying published artifacts from ../${BUILD_OUTPUT_DIR} ..."
-    # BUILD_OUTPUT_DIR được tạo ở job 'build' và nằm ngoài 'deploy_temp_repo'
-    # Dấu / ở cuối BUILD_OUTPUT_DIR trong artifacts:paths có nghĩa là copy nội dung của thư mục đó
-    # nên khi cp, ta dùng ../${BUILD_OUTPUT_DIR}/. (dấu . để copy tất cả nội dung vào thư mục hiện tại)
     - cp -r "../${BUILD_OUTPUT_DIR}/." .
 
     - echo "Adding changes and committing..."
     - git add .
-    # Kiểm tra xem có thay đổi không trước khi commit
     - |
       if git diff --staged --quiet; then
         echo "Không có thay đổi nào để commit."
       else
-        git commit -m "CI/CD: Auto-deploying build from $CI_COMMIT_SHORT_SHA"
+        git commit -m "CI/CD: Auto-deploying build from $CI_COMMIT_SHORT_SHA (via SSH)"
       fi
 
-    - echo "Pushing to plesk-deploy branch..."
-    - git push -f "${DEPLOY_REPO_URL}" plesk-deploy
-
-
+    - echo "Pushing to ${PLESK_DEPLOY_BRANCH} branch using SSH..."
+    - git push -f "${GIT_SSH_REPO_URL}" "${PLESK_DEPLOY_BRANCH}"
   dependencies:
-    - build # Đảm bảo job này chạy sau và sử dụng artifacts từ job 'build'
+    - build
