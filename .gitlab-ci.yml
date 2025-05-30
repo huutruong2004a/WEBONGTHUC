@@ -6,40 +6,50 @@ variables:
   PROJECT_NAME: WEB_CONG_THUC
   BUILD_OUTPUT_DIR: publish_output
 
+# Job để build và publish ứng dụng .NET
 build:
   stage: build
   image: mcr.microsoft.com/dotnet/sdk:9.0
   script:
     - echo "Restoring NuGet packages..."
-    - dotnet restore "$PROJECT_NAME/$PROJECT_NAME/$PROJECT_NAME.csproj"
+    - dotnet restore $PROJECT_NAME/$PROJECT_NAME/$PROJECT_NAME.csproj
     - echo "Building and publishing the project..."
-    - dotnet publish "$PROJECT_NAME/$PROJECT_NAME/$PROJECT_NAME.csproj" -c Release -o "$BUILD_OUTPUT_DIR" --no-restore
+    - dotnet publish $PROJECT_NAME/$PROJECT_NAME/$PROJECT_NAME.csproj -c Release -o $BUILD_OUTPUT_DIR --no-restore
   artifacts:
     paths:
       - $BUILD_OUTPUT_DIR/
     expire_in: 1 hour
 
+# Job để đẩy các file đã publish lên nhánh mà Plesk sẽ kéo về
 deploy_to_plesk_branch:
   stage: deploy_to_plesk_branch
-  image: alpine/git
+  image: alpine:latest # ✅ Sử dụng alpine cơ bản có shell
+  before_script:
+    - apk add --no-cache git bash coreutils # ✅ Cài thêm git, bash và công cụ shell cần thiết
   only:
     - develop
   script:
     - echo "Configuring Git for deployment..."
     - git config user.name "GitLab CI/CD Deployer"
     - git config user.email "gitlab-ci@example.com"
+
     - echo "Cloning and preparing deploy branch..."
     - git clone --depth 1 "https://gitlab-ci-token:${GITLAB_DEPLOY_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git" deploy_temp_repo
     - cd deploy_temp_repo
     - git checkout -B plesk-deploy
+
     - echo "Cleaning existing files in deploy branch..."
     - find . -maxdepth 1 -not -name '.git' -not -name '.gitlab-ci.yml' -exec rm -rf {} +
+
     - echo "Copying published artifacts..."
     - cp -r ../$BUILD_OUTPUT_DIR/. .
+
     - echo "Adding changes and committing..."
     - git add .
     - git commit -m "CI/CD: Auto-deploying from $CI_COMMIT_SHORT_SHA" || true
+
     - echo "Pushing to plesk-deploy branch..."
     - git push -f "https://gitlab-ci-token:${GITLAB_DEPLOY_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git" plesk-deploy
+
   dependencies:
     - build
