@@ -1,6 +1,6 @@
 stages:
   - build
-  - deployplesk
+  - deploy_to_plesk_branch # <-- Tên stage này
 
 variables:
   PROJECT_NAME: WEB_CONG_THUC # Tên dự án .NET của bạn
@@ -21,32 +21,35 @@ build:
     expire_in: 1 hour # Cần expire nhanh vì sẽ được đẩy sang nhánh khác
 
 # Job để đẩy các file đã publish lên nhánh mà Plesk sẽ kéo về
-deploy_to_plesk_branch:
-  stage: deployplesk
+deploy_to_plesk_branch: # <-- Tên của job
+  stage: deploy_to_plesk_branch # <-- Tên stage này phải khớp với định nghĩa ở trên cùng
   image: alpine/git # Sử dụng image nhỏ gọn có sẵn Git
   only:
     - develop # Chỉ chạy job này khi push lên nhánh 'develop' (hoặc 'main', 'release' tùy quy trình của bạn)
-  script:
-    - echo "Configuring Git for deployment..."
-    - git config user.name "GitLab CI/CD Deployer"
-    - git config user.email "gitlab-ci@example.com"
+  script: | # <--- Dấu "|" ở đây chỉ ra rằng đây là một khối lệnh nhiều dòng
+    echo "Configuring Git for deployment..."
+    git config user.name "GitLab CI/CD Deployer"
+    git config user.email "gitlab-ci@example.com"
 
-    - echo "Cloning and preparing deploy branch..."
-    - git clone --depth 1 "https://gitlab-ci-token:${GITLAB_DEPLOY_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git" deploy_temp_repo
-    - cd deploy_temp_repo
-    - git checkout -B plesk-deploy # Tạo hoặc chuyển sang nhánh 'plesk-deploy'
+    echo "Cloning and preparing deploy branch..."
+    git clone --depth 1 "https://gitlab-ci-token:${GITLAB_DEPLOY_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git" deploy_temp_repo
+    cd deploy_temp_repo
+    git checkout -B plesk-deploy # Tạo hoặc chuyển sang nhánh 'plesk-deploy'
 
-    - echo "Cleaning existing files in deploy branch..."
-    - find . -maxdepth 1 -not -name '.git' -not -name '.gitlab-ci.yml' -exec rm -rf {} + # Xóa mọi thứ trừ .git và .gitlab-ci.yml
+    echo "Cleaning existing files in deploy branch..."
+    # Lệnh này sẽ xóa mọi thứ trong thư mục hiện tại trừ .git và .gitlab-ci.yml.
+    # Đảm bảo bạn đang ở đúng thư mục (deploy_temp_repo)
+    find . -maxdepth 1 -not -name '.git' -not -name '.gitlab-ci.yml' -exec rm -rf {} +
 
-    - echo "Copying published artifacts..."
-    - cp -r ../$BUILD_OUTPUT_DIR/. . # Sao chép tất cả các file đã publish vào thư mục gốc của nhánh deploy
+    echo "Copying published artifacts..."
+    cp -r ../$BUILD_OUTPUT_DIR/. . # Sao chép tất cả các file đã publish vào thư mục gốc của nhánh deploy
 
-    - echo "Adding changes and committing..."
-    - git add .
-    - git commit -m "CI/CD: Auto-deploying from $CI_COMMIT_SHORT_SHA" || true # Commit nếu có thay đổi
-    - echo "Pushing to plesk-deploy branch..."
-    - git push -f "https://gitlab-ci-token:${GITLAB_DEPLOY_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git" plesk-deploy
+    echo "Adding changes and committing..."
+    # || true để pipeline không bị lỗi nếu không có thay đổi nào để commit (ví dụ: chạy lại pipeline mà không có thay đổi code)
+    git add .
+    git commit -m "CI/CD: Auto-deploying from $CI_COMMIT_SHORT_SHA" || true
+    echo "Pushing to plesk-deploy branch..."
+    git push -f "https://gitlab-ci-token:${GITLAB_DEPLOY_TOKEN}@gitlab.com/${CI_PROJECT_PATH}.git" plesk-deploy
     # -f (force): Đảm bảo ghi đè nếu có lịch sử khác biệt (cần thiết khi deploy artifacts)
   dependencies:
     - build # Đảm bảo job này chạy sau khi job 'build' hoàn thành và có artifacts
