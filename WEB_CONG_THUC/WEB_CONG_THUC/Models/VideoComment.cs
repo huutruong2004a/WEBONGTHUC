@@ -13,6 +13,8 @@ namespace WEB_CONG_THUC.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
+        public int Rating { get; set; }
+
         public int VideoId { get; set; }
         [ForeignKey("VideoId")]
         public virtual Video? Video { get; set; }

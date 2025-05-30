@@ -85,8 +85,8 @@ namespace CookShare.Controllers
             var recipe = await _context.Recipes
                 .Include(r => r.Category)
                 .Include(r => r.User)
-                .Include(r => r.Reviews)
-                    .ThenInclude(review => review.User)
+                .Include(r => r.Reviews) 
+                    .ThenInclude(review => review.User) 
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (recipe == null)
@@ -94,7 +94,52 @@ namespace CookShare.Controllers
                 return NotFound();
             }
 
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                ViewBag.IsRecipeFavorited = await _context.RecipeFavorites
+                                                .AnyAsync(rf => rf.RecipeId == id && rf.UserId == userId);
+            }
+            else
+            {
+                ViewBag.IsRecipeFavorited = false;
+            }
+
             return View(recipe);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddReview(int recipeId, int rating, string? comment, string? returnUrl)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Challenge(); // Hoặc Unauthorized() tùy theo logic của bạn
+            }
+
+            // Kiểm tra xem có rating hoặc comment không, nếu cả hai đều trống thì báo lỗi
+            if (rating == 0 && string.IsNullOrWhiteSpace(comment))
+            {
+                TempData["ErrorMessage"] = "Vui lòng cung cấp đánh giá (sao) hoặc viết bình luận.";
+                return Redirect(returnUrl ?? Url.Action("Details", "Recipes", new { id = recipeId })!);
+            }
+
+            var review = new RecipeReview
+            {
+                RecipeId = recipeId,
+                UserId = userId,
+                Rating = rating, // Rating có thể là 0 nếu người dùng chỉ comment
+                Comment = comment ?? string.Empty, // Comment có thể trống nếu người dùng chỉ đánh giá sao
+                CreatedAt = DateTime.Now
+            };
+
+            _context.RecipeReviews.Add(review);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Cảm ơn bạn đã gửi đánh giá!";
+            return Redirect(returnUrl ?? Url.Action("Details", "Recipes", new { id = recipeId })!);
         }
 
         // GET: Recipes/Create
@@ -379,6 +424,56 @@ namespace CookShare.Controllers
         private bool RecipeExists(int id)
         {
             return _context.Recipes.Any(e => e.Id == id);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> MyFavoriteRecipes()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var favoriteRecipes = await _context.RecipeFavorites
+                                        .Where(rf => rf.UserId == userId)
+                                        .Include(rf => rf.Recipe) // Tải thông tin Recipe
+                                            .ThenInclude(r => r!.User) // Tải thông tin User của Recipe
+                                        .Include(rf => rf.Recipe) // Tải thông tin Recipe
+                                            .ThenInclude(r => r!.Category) // Tải thông tin Category của Recipe
+                                        .Select(rf => rf.Recipe)
+                                        .ToListAsync();
+            return View(favoriteRecipes);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken] // Cân nhắc bỏ nếu gọi từ AJAX thuần túy và xử lý anti-forgery token riêng
+        public async Task<IActionResult> ToggleFavoriteRecipe(int recipeId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new { success = false, message = "Người dùng chưa đăng nhập." });
+            }
+
+            var existingFavorite = await _context.RecipeFavorites
+                                        .FirstOrDefaultAsync(rf => rf.RecipeId == recipeId && rf.UserId == userId);
+
+            bool isFavorited;
+            if (existingFavorite != null)
+            {
+                _context.RecipeFavorites.Remove(existingFavorite);
+                isFavorited = false;
+            }
+            else
+            {
+                _context.RecipeFavorites.Add(new RecipeFavorite { RecipeId = recipeId, UserId = userId });
+                isFavorited = true;
+            }
+
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, isFavorited });
         }
 
         public async Task<IActionResult> Videos(int id)

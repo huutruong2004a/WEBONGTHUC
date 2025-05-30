@@ -16,7 +16,7 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">WEB_CONG_THUC</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">WEB_CONG_THUC</a> @* Giữ lại tên website mặc định hoặc tên bạn đã đặt trước đó *@
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
                         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -32,10 +32,23 @@
                                asp-area="" asp-controller="Recipes" asp-action="Index">Công thức</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["action"]?.ToString() == "Privacy" ? "active" : "")"
-                               asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link text-dark @(ViewContext.RouteData.Values["controller"]?.ToString() == "Blog" ? "active" : "")" 
+                               asp-area="" asp-controller="Blog" asp-action="Index">Blog</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark @(ViewContext.RouteData.Values["controller"]?.ToString() == "Videos" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")"
+                               asp-area="" asp-controller="Videos" asp-action="Index">Video</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["action"]?.ToString() == "About" ? "active" : "")"
+                               asp-area="" asp-controller="Home" asp-action="About">Về chúng tôi</a>
+                        </li>
+                         <li class="nav-item">
+                            <a class="nav-link text-dark @(ViewContext.RouteData.Values["controller"]?.ToString() == "Contact" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")" 
+                                asp-area="" asp-controller="Contact" asp-action="Index">Liên hệ</a>
                         </li>
                     </ul>
+                    @* Phần này sẽ không còn d-flex align-items-center nữa nếu bạn muốn hoàn toàn như cũ *@
                     <partial name="_LoginPartial" />
                 </div>
             </div>
@@ -60,3 +73,4 @@
 </body>
 
 </html>
+@* Xóa khối <style> đã thêm trước đó *@

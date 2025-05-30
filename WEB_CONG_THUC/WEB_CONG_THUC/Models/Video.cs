@@ -62,6 +62,11 @@ namespace WEB_CONG_THUC.Models
         public virtual ICollection<VideoComment> Comments { get; set; } = new HashSet<VideoComment>();
         public string Slug { get; set; } = string.Empty;
         public VideoStatus Status { get; set; } = VideoStatus.Pending;
+
+        // Thêm thuộc tính CategoryId và Category
+        public int? CategoryId { get; set; } // Nullable nếu video không bắt buộc phải có category
+        [ForeignKey("CategoryId")]
+        public virtual Category? Category { get; set; }
     }
     public enum VideoUploadType
     {

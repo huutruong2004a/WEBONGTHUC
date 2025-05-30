@@ -82,21 +82,25 @@ namespace WEB_CONG_THUC.Repositories
             var favorite = await _context.VideoFavorites
                 .FirstOrDefaultAsync(vf => vf.VideoId == videoId && vf.UserId == userId);
 
+            bool isNowFavorited;
             if (favorite != null)
             {
                 _context.VideoFavorites.Remove(favorite);
+                isNowFavorited = false; // It was a favorite, now it's not
             }
             else
             {
                 _context.VideoFavorites.Add(new VideoFavorite
                 {
                     VideoId = videoId,
-                    UserId = userId
+                    UserId = userId,
+                    CreatedAt = DateTime.UtcNow // Good practice to set CreatedAt
                 });
+                isNowFavorited = true; // It was not a favorite, now it is
             }
 
-            return await _context.SaveChangesAsync() > 0;
-
+            await _context.SaveChangesAsync();
+            return isNowFavorited; // Return the actual new state
         }
 
     }

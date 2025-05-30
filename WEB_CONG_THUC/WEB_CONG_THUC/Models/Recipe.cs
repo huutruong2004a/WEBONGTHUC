@@ -49,7 +49,10 @@ namespace WEB_CONG_THUC.Models
         [Display(Name = "Nguyên liệu (mỗi dòng một nguyên liệu)")]
         public string Ingredients { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Vui lòng nhập các bước thực hiện")]
+        // Navigation property for reviews
+        public virtual ICollection<RecipeReview> Reviews { get; set; } = new List<RecipeReview>();
+
+        [Required(ErrorMessage = "Vui lòng nhập hướng dẫn")]
         [Display(Name = "Các bước thực hiện (mỗi dòng một bước)")]
         public string Instructions { get; set; } = string.Empty;
 
@@ -69,7 +72,9 @@ namespace WEB_CONG_THUC.Models
         [ForeignKey("UserId")]
         public IdentityUser? User { get; set; }
 
-        public ICollection<RecipeReview> Reviews { get; set; } = new List<RecipeReview>();
+        public virtual ICollection<RecipeFavorite> Favorites { get; set; } = new List<RecipeFavorite>();
+
+        // public ICollection<RecipeReview> Reviews { get; set; } = new List<RecipeReview>(); // Dòng này đã bị comment hoặc xóa ở lần trước
 
         [Display(Name = "Phổ biến")]
         public bool IsPopular { get; set; } = false;

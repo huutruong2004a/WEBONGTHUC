@@ -23,5 +23,8 @@ namespace WEB_CONG_THUC.Models
 
         [Display(Name = "Hình thu nhỏ")]
         public IFormFile? ThumbnailFile { get; set; }
+
+        [Display(Name = "Danh mục")]
+        public int? CategoryId { get; set; }
     }
 }
