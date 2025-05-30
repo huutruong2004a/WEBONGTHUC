@@ -1,44 +1,10 @@
-stages:
-  - build
-  - deploy_to_plesk_branch
-
-variables:
-  PROJECT_NAME: WEB_CONG_THUC
-  BUILD_OUTPUT_DIR: publish_output
-  # URL Repository cho SSH. Thay đổi nếu server GitLab của bạn khác gitlab.com
-  GIT_SSH_REPO_URL: "git@${CI_SERVER_HOST}:${CI_PROJECT_PATH}.git"
-  PLESK_DEPLOY_BRANCH: plesk-deploy # Tên nhánh mà Plesk sẽ kéo về
-
-build:
-  stage: build
-  image: mcr.microsoft.com/dotnet/sdk:9.0 # Hoặc phiên bản .NET SDK bạn đang dùng
-  script:
-    - echo "Restoring NuGet packages for ${PROJECT_NAME}..."
-    # Đảm bảo đường dẫn đến file .csproj của bạn là chính xác!
-    - dotnet restore "${PROJECT_NAME}/${PROJECT_NAME}/${PROJECT_NAME}.csproj"
-    - echo "Building and publishing the project ${PROJECT_NAME}..."
-    - dotnet publish "${PROJECT_NAME}/${PROJECT_NAME}/${PROJECT_NAME}.csproj" -c Release -o "${BUILD_OUTPUT_DIR}" --no-restore
-  artifacts:
-    paths:
-      - "${BUILD_OUTPUT_DIR}/"
-    expire_in: 1 hour
-
 deploy_to_plesk_branch:
   stage: deploy_to_plesk_branch
-  # Sử dụng image có sẵn git và openssh-client
   image: alpine/git:latest
-  # Hoặc bạn có thể dùng alpine:latest và cài đặt:
-  # image: alpine:latest
-  # before_script:
-  #   - apk add --no-cache git openssh-client bash
   only:
-    - develop # Chỉ chạy khi có commit vào nhánh develop
+    - develop
   before_script:
     - echo "Starting SSH agent setup..."
-    # Đảm bảo openssh-client đã được cài đặt (alpine/git thường có sẵn)
-    # - apk update && apk add --no-cache openssh-client git # Bỏ comment nếu dùng image alpine:latest cơ bản
-
-    # Kiểm tra biến SSH_PRIVATE_KEY (loại File)
     - |
       if [ -z "${SSH_PRIVATE_KEY}" ]; then
         echo "LỖI: Biến SSH_PRIVATE_KEY (loại File) chưa được thiết lập trong CI/CD Variables."
@@ -48,11 +14,9 @@ deploy_to_plesk_branch:
         echo "Hãy đảm bảo bạn đã chọn Type là 'File' cho biến SSH_PRIVATE_KEY."
         exit 1
       fi
-    
     - eval $(ssh-agent -s)
-    - chmod 600 "${SSH_PRIVATE_KEY}" # GitLab runner sẽ đặt file này ở một đường dẫn tạm
+    - chmod 600 "${SSH_PRIVATE_KEY}"
     - ssh-add "${SSH_PRIVATE_KEY}"
-
     - echo "Configuring SSH known_hosts..."
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
@@ -63,32 +27,25 @@ deploy_to_plesk_branch:
         echo "SSH known_hosts configured."
       else
         echo "CẢNH BÁO: Biến SSH_KNOWN_HOSTS không được thiết lập."
-        echo "Sẽ cố gắng kết nối mà không xác minh host key (có thể không an toàn hoặc yêu cầu tương tác nếu host chưa từng được kết nối)."
-        # Để tự động chấp nhận host key (ít an toàn hơn, chỉ dùng nếu bạn hiểu rõ rủi ro):
-        # echo -e "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null" > ~/.ssh/config
-        # Hoặc quét key một lần (có thể thất bại nếu có tương tác):
-        # ssh-keyscan "${CI_SERVER_HOST}" >> ~/.ssh/known_hosts
+        # Tùy chọn xử lý nếu không có SSH_KNOWN_HOSTS
       fi
   script:
     - echo "Configuring Git user..."
     - git config --global user.name "GitLab CI/CD Deployer"
-    - git config --global user.email "gitlab-ci@${CI_SERVER_HOST}" # Hoặc một email bất kỳ
-
-    - echo "Cloning repository to a temporary directory using SSH: ${GIT_SSH_REPO_URL}"
-    - rm -rf deploy_temp_repo # Xóa thư mục cũ nếu có
+    - git config --global user.email "gitlab-ci@${CI_SERVER_HOST}"
+    - echo "Cloning repository to a temporary directory using SSH:"
+    - echo "URL: ${GIT_SSH_REPO_URL}"
+    - rm -rf deploy_temp_repo
     - mkdir deploy_temp_repo
     - cd deploy_temp_repo
-
     - echo "Cloning deploy branch or initializing new one..."
     - git clone --depth 1 "${GIT_SSH_REPO_URL}" .
-    - git checkout -B "${PLESK_DEPLOY_BRANCH}" # Tạo nhánh mới hoặc chuyển sang nếu đã có
-
+    - git checkout -B "${PLESK_DEPLOY_BRANCH}"
     - echo "Cleaning existing files in deploy branch (except .git folder)..."
-    - ls -A | grep -v -E '^\.git$' | xargs rm -rf || true
-
+    # Sử dụng một cách dọn dẹp khác để tránh lỗi cú pháp tiềm ẩn với ls và xargs
+    - find . -maxdepth 1 -mindepth 1 ! -name '.git' -exec rm -rf {} \; || true
     - echo "Copying published artifacts from ../${BUILD_OUTPUT_DIR} ..."
     - cp -r "../${BUILD_OUTPUT_DIR}/." .
-
     - echo "Adding changes and committing..."
     - git add .
     - |
@@ -97,7 +54,6 @@ deploy_to_plesk_branch:
       else
         git commit -m "CI/CD: Auto-deploying build from $CI_COMMIT_SHORT_SHA (via SSH)"
       fi
-
     - echo "Pushing to ${PLESK_DEPLOY_BRANCH} branch using SSH..."
     - git push -f "${GIT_SSH_REPO_URL}" "${PLESK_DEPLOY_BRANCH}"
   dependencies:
