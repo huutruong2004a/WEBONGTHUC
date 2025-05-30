@@ -1,6 +1,6 @@
 stages:
   - build
-  - deploy_to_plesk_branch
+  - deployplesk
 
 variables:
   PROJECT_NAME: WEB_CONG_THUC # Tên dự án .NET của bạn
