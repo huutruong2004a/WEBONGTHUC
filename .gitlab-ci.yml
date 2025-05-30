@@ -22,7 +22,7 @@ build:
 
 # Job để đẩy các file đã publish lên nhánh mà Plesk sẽ kéo về
 deploy_to_plesk_branch:
-  stage: deploy_to_plesk_branch
+  stage: deployplesk
   image: alpine/git # Sử dụng image nhỏ gọn có sẵn Git
   only:
     - develop # Chỉ chạy job này khi push lên nhánh 'develop' (hoặc 'main', 'release' tùy quy trình của bạn)
