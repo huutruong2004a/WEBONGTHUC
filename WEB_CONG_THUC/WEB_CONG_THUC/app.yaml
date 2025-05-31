@@ -1,0 +1,26 @@
+runtime: custom
+env: flex
+
+runtime_config:
+  operating_system: "ubuntu22"
+
+env_variables:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  # Quan trọng: App Engine Flex cần ứng dụng lắng nghe trên port 8080
+  ASPNETCORE_URLS: "http://+:8080"
+  # Thêm các biến môi trường khác của bạn ở đây nếu cần
+  # MY_CUSTOM_VARIABLE: "my_value"
+
+automatic_scaling:
+  cool_down_period_sec: 120
+  cpu_utilization:
+    target_utilization: 0.6
+  # min_instances và max_instances KHÔNG được cấu hình ở đây.
+  # Chúng được cấu hình trong autoscaling.yaml hoặc qua gcloud/Console sau khi deploy.
+
+resources:
+  cpu: 1
+  memory_gb: 2
+  disk_size_gb: 20
+
+# QUAN TRỌNG: Đảm bảo KHÔNG CÓ phần "handlers" ở đây.

@@ -37,9 +37,9 @@
                 </div>
                 @if (User.Identity!.IsAuthenticated)
                 {
-                    <button class="btn btn-outline-warning ms-auto btn-favorite-recipe @(ViewBag.IsRecipeFavorited ? "active" : "")"
-                            data-recipe-id="@Model.Id"
-                            style="position: absolute; top: 20px; right: 20px;">
+                    <button
+                        class="btn btn-outline-warning ms-auto btn-favorite-recipe @(ViewBag.IsRecipeFavorited ? "active" : "")"
+                        data-recipe-id="@Model.Id" style="position: absolute; top: 20px; right: 20px;">
                         <i class="fas fa-heart"></i>
                         <span class="ms-1">@(ViewBag.IsRecipeFavorited ? "Đã thích" : "Yêu thích")</span>
                     </button>
@@ -57,7 +57,8 @@
                     }
                     else
                     {
-                        <img src="/images/recipe-placeholder.jpg" alt="Hình ảnh công thức mặc định" class="recipe-image" />
+                        <img src="/images/recipes/recipe-placeholder.jpg" alt="Hình ảnh công thức mặc định"
+                            class="recipe-image" />
                     }
                     <div class="image-overlay">
                         <div class="recipe-stats">
@@ -316,7 +317,8 @@
 
         <!-- Reviews Section -->
         <div class="reviews-section mt-4 pt-4 border-top">
-            <h3 class="mb-3"><i class="fas fa-comments text-warning"></i> Đánh giá & Bình luận (@(Model.Reviews?.Count ?? 0))</h3>
+            <h3 class="mb-3"><i class="fas fa-comments text-warning"></i> Đánh giá & Bình luận (@(Model.Reviews?.Count
+                                ?? 0))</h3>
 
             @if (User.Identity?.IsAuthenticated ?? false)
             {
@@ -325,7 +327,8 @@
                         <h5 class="card-title">Để lại đánh giá của bạn</h5>
                         <form asp-controller="Recipes" asp-action="AddReview" method="post">
                             <input type="hidden" name="recipeId" value="@Model.Id" />
-                            <input type="hidden" name="returnUrl" value="@Url.Action("Details", "Recipes", new { id = Model.Id })" />
+                            <input type="hidden" name="returnUrl"
+                                value="@Url.Action("Details", "Recipes", new { id = Model.Id })" />
                             <div class="mb-3">
                                 <label for="rating-recipe-input" class="form-label">Đánh giá của bạn:</label>
                                 <div id="star-rating-recipe" class="fs-4 star-rating-input" style="cursor:pointer;">
@@ -338,8 +341,10 @@
                                 <input type="hidden" name="rating" id="rating-recipe-input" value="0" />
                             </div>
                             <div class="mb-3">
-                                <label for="comment" class="form-label">Bình luận (không bắt buộc nếu bạn chỉ đánh giá):</label>
-                                <textarea name="comment" class="form-control" rows="3" placeholder="Chia sẻ cảm nghĩ của bạn..."></textarea>
+                                <label for="comment" class="form-label">Bình luận (không bắt buộc nếu bạn chỉ đánh
+                                    giá):</label>
+                                <textarea name="comment" class="form-control" rows="3"
+                                placeholder="Chia sẻ cảm nghĩ của bạn..."></textarea>
                             </div>
                             <div class="text-end">
                                 <button type="submit" class="btn btn-primary">
@@ -354,7 +359,8 @@
             {
                 <div class="alert alert-info text-center">
                     <i class="fas fa-sign-in-alt"></i>
-                    <a asp-area="Identity" asp-page="/Account/Login" asp-route-returnUrl="@Url.Action("Details", "Recipes", new { id = Model.Id })">Đăng nhập</a>
+                    <a asp-area="Identity" asp-page="/Account/Login"
+                        asp-route-returnUrl="@Url.Action("Details", "Recipes", new { id = Model.Id })">Đăng nhập</a>
                     để để lại đánh giá và bình luận.
                 </div>
             }
@@ -442,11 +448,11 @@
             // Xử lý nút yêu thích cho Recipe
             const favoriteRecipeBtn = document.querySelector('.btn-favorite-recipe');
             if (favoriteRecipeBtn) {
-                favoriteRecipeBtn.addEventListener('click', async function() {
+                favoriteRecipeBtn.addEventListener('click', async function () {
                     const recipeId = this.dataset.recipeId;
                     const icon = this.querySelector('i');
                     const text = this.querySelector('span');
-                    
+
                     try {
                         const response = await fetch(`/Recipes/ToggleFavoriteRecipe?recipeId=${recipeId}`, {
                             method: 'POST',
@@ -454,7 +460,7 @@
                                 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value // Cần có token nếu dùng ValidateAntiForgeryToken
                             }
                         });
-                        
+
                         if (response.ok) {
                             const data = await response.json();
                             if (data.success) {
@@ -468,11 +474,11 @@
                             }
                         } else {
                             console.error('Lỗi server khi thay đổi trạng thái yêu thích.');
-                             // Hiển thị thông báo lỗi cho người dùng nếu cần
+                            // Hiển thị thông báo lỗi cho người dùng nếu cần
                         }
                     } catch (error) {
                         console.error('Lỗi JavaScript khi yêu thích công thức:', error);
-                         // Hiển thị thông báo lỗi cho người dùng nếu cần
+                        // Hiển thị thông báo lỗi cho người dùng nếu cần
                     }
                 });
             }

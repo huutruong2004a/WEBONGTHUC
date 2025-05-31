@@ -80,23 +80,25 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Search functionality
-    const searchInput = document.querySelector('.search-box input');
+    // Search functionality - REMOVE OR COMMENT OUT THIS ENTIRE BLOCK
+    // const searchInput = document.querySelector('.search-box input'); // This selector might target the wrong input now
+    // const layoutSearchForm = document.getElementById('layoutSearchForm'); // Use the form ID
 
-    if (searchInput) {
-        searchInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const searchTerm = this.value.trim();
-
-                if (searchTerm) {
-                    // In a real application, you would redirect to a search results page
-                    // window.location.href = `/recipes/search?q=${encodeURIComponent(searchTerm)}`;
-                    alert(`Searching for: ${searchTerm}`);
-                }
-            }
-        });
-    }
+    // if (searchInput && layoutSearchForm) { // Check for both input and form
+    //     searchInput.addEventListener('keypress', function (e) {
+    //         if (e.key === 'Enter') {
+    //             // e.preventDefault(); // Prevent default only if we are handling it here, otherwise let the form submit
+    //             // const searchTerm = this.value.trim();
+    //             // if (searchTerm) {
+    //                 // alert(`Searching for: ${searchTerm}`); // Remove alert
+    //                 // layoutSearchForm.submit(); // Optionally submit the form via JS if needed
+    //             // } else {
+    //                 // e.preventDefault(); // Prevent submitting an empty form if Enter is pressed on empty input
+    //             // }
+    //         }
+    //     });
+    // }
+    // END OF BLOCK TO REMOVE/COMMENT
 });
 
 // Authentication page functionality
@@ -145,5 +147,65 @@ document.addEventListener('DOMContentLoaded', function () {
                 userDropdownContent.classList.remove('show');
             }
         });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Mobile menu toggle (this might be a duplicate if you have it above, ensure only one instance)
+    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+    const navLinksUl = document.querySelector('.nav-links'); // Changed to select the UL
+
+    if (mobileMenuBtn && navLinksUl) {
+        mobileMenuBtn.addEventListener('click', function () {
+            navLinksUl.classList.toggle('show');
+        });
+    }
+
+    // Active navigation link based on current URL
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.main-nav .nav-links li a');
+
+    navLinks.forEach(link => {
+        link.classList.remove('active'); // Remove active from all first
+        let linkPath = link.getAttribute('href');
+
+        // Normalize paths for comparison (e.g., ensure leading/trailing slashes are consistent or handled)
+        // For simple comparison:
+        // If currentPath is just "/" (homepage), and linkPath is also "/", it's a match.
+        // Otherwise, for other pages, check if currentPath starts with the linkPath (if linkPath is not just "/").
+        if (linkPath === currentPath) {
+            link.classList.add('active');
+        } else if (linkPath !== "/" && currentPath.startsWith(linkPath)) {
+            // This handles cases like /recipes/details matching /recipes
+            // However, be careful if you have similar starting paths e.g. /blog and /blog-archive
+            // For more robust matching, you might need to compare segments or use a more specific logic.
+            // For now, let's assume direct match or homepage match is sufficient for most cases.
+            // If currentPath is /recipes/details and linkPath is /recipes, add active
+            if (currentPath.startsWith(linkPath + (linkPath.endsWith('/') ? '' : '/')) || currentPath === linkPath) {
+                 // A more specific check to avoid /blog activating for /blog-posts if /blog is a link
+                 // This is a simple check, might need refinement based on your exact URL structures and nav links
+            }
+        }
+    });
+
+    // If no specific link matched (e.g., on a sub-page not directly in nav), but we are in a section
+    // Example: if on /recipes/details/123, and there's a /recipes link, highlight /recipes
+    // This part requires more specific logic based on your site structure.
+    // A simplified approach for now:
+    if (!document.querySelector('.main-nav .nav-links li a.active')) {
+        navLinks.forEach(link => {
+            let linkPath = link.getAttribute('href');
+            if (linkPath !== "/" && currentPath.startsWith(linkPath)) {
+                // Check if the current path starts with the link path, but is longer
+                if (currentPath.length > linkPath.length && currentPath.charAt(linkPath.length) === '/') {
+                    link.classList.add('active');
+                }
+            }
+        });
+    }
+     // Special case for homepage if nothing else is active and path is "/"
+    if (!document.querySelector('.main-nav .nav-links li a.active') && currentPath === "/"){
+        const homeLink = document.querySelector('.main-nav .nav-links li a[href="/"]');
+        if(homeLink) homeLink.classList.add('active');
     }
 });
