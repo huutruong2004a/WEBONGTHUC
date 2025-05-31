@@ -1,283 +1,334 @@
 ﻿/* CSS cho User Navigation Header - Fixed Version */
 .user-nav {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    height: 100%;
-    margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  margin-left: auto;
 }
 
-    .user-nav .navbar-nav {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        margin: 0;
-        padding: 0;
-        list-style: none;
-    }
+.user-nav .navbar-nav {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
 
-    .user-nav .nav-item {
-        margin-left: 15px;
-    }
+.user-nav .nav-item {
+  margin-left: 15px;
+}
 
-    .user-nav .nav-link {
-        color: #333 !important;
-        text-decoration: none;
-        padding: 8px 16px;
-        border-radius: 20px;
-        transition: all 0.3s ease;
-        font-weight: 500;
-        white-space: nowrap;
-    }
+.user-nav .nav-link {
+  color: #333 !important;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  white-space: nowrap;
+}
 
-        .user-nav .nav-link:hover {
-            background-color: #ff9f43;
-            color: white !important;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(255, 159, 67, 0.3);
-        }
+.user-nav .nav-link:hover {
+  background-color: #ff9f43;
+  color: white !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 159, 67, 0.3);
+}
 
 /* User Dropdown Styles - FIXED */
 .user-dropdown {
-    position: relative;
-    display: inline-block;
+  position: relative;
+  display: inline-block;
 }
 
 .user-dropdown-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: linear-gradient(135deg, #ff9f43, #ffa726);
-    border: none;
-    padding: 8px 16px;
-    border-radius: 25px;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 500;
-    box-shadow: 0 2px 10px rgba(255, 159, 67, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #ff9f43, #ffa726);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 25px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  box-shadow: 0 2px 10px rgba(255, 159, 67, 0.3);
 }
 
-    .user-dropdown-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(255, 159, 67, 0.4);
-        background: linear-gradient(135deg, #ff8f00, #ff9f43);
-    }
+.user-dropdown-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(255, 159, 67, 0.4);
+  background: linear-gradient(135deg, #ff8f00, #ff9f43);
+}
 
 .user-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 2px solid white;
-    object-fit: cover;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid white;
+  object-fit: cover;
 }
 
 /* FIXED: Dropdown content với khoảng cách và hover area */
 .user-dropdown-content {
-    display: none;
-    position: absolute;
-    right: 0;
-    top: calc(100% + 5px); /* Giảm khoảng cách */
-    background-color: white;
-    min-width: 250px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    border-radius: 12px;
-    z-index: 1000;
-    padding: 8px 0;
-    border: 1px solid #f0f0f0;
-    animation: slideDown 0.3s ease;
+  display: none;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 5px); /* Giảm khoảng cách */
+  background-color: white;
+  min-width: 250px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  z-index: 1000;
+  padding: 8px 0;
+  border: 1px solid #f0f0f0;
+  animation: slideDown 0.3s ease;
 }
 
 /* FIXED: Tạo vùng hover liên tục */
 .user-dropdown::before {
-    content: '';
-    position: absolute;
-    top: 100%;
-    right: 0;
-    width: 100%;
-    height: 10px; /* Vùng buffer để giữ dropdown mở */
-    background: transparent;
-    z-index: 999;
+  content: "";
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 100%;
+  height: 10px; /* Vùng buffer để giữ dropdown mở */
+  background: transparent;
+  z-index: 999;
 }
 
 @keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* FIXED: Sử dụng hover cho cả container */
 .user-dropdown:hover .user-dropdown-content,
 .user-dropdown-content:hover {
-    display: block !important;
+  display: block !important;
 }
 
 .user-dropdown-content a,
 .user-dropdown-content .dropdown-item {
-    color: #333;
-    padding: 12px 20px;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.2s ease;
-    border: none;
-    background: none;
-    width: 100%;
-    text-align: left;
-    cursor: pointer;
+  color: #333;
+  padding: 12px 20px; /* Giữ padding gốc cho trạng thái bình thường */
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
 }
 
-    .user-dropdown-content a:hover,
-    .user-dropdown-content .dropdown-item:hover {
-        background-color: #fff3e0;
-        color: #ff9f43;
-        padding-left: 25px;
-    }
+.user-dropdown-content a:hover,
+.user-dropdown-content .dropdown-item:hover {
+  background-color: #fff3e0; /* Màu nền cam nhạt khi hover */
+  color: #ff9f43; /* Màu chữ cam khi hover */
+  /* padding-left: 25px; */ /* XÓA hoặc comment dòng này để không bị thụt vào */
+}
 
 .user-dropdown-content i {
-    width: 16px;
-    color: #ff9f43;
+  width: 16px;
+  color: #ff9f43;
 }
 
 /* FIXED: Nested Dropdown với hover area */
 .user-dropdown-content .dropdown {
-    position: relative;
+  position: relative;
 }
 
-    .user-dropdown-content .dropdown::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: -10px;
-        width: 15px;
-        height: 100%;
-        background: transparent;
-        z-index: 998;
-    }
+.user-dropdown-content .dropdown::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -10px;
+  width: 15px;
+  height: 100%;
+  background: transparent;
+  z-index: 998;
+}
 
 .user-dropdown-content .dropdown-menu {
-    position: absolute;
-    left: calc(100% + 5px);
-    top: 0;
-    display: none;
-    background-color: white;
-    min-width: 200px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    border-radius: 8px;
-    border: 1px solid #f0f0f0;
-    animation: slideRight 0.2s ease;
-    z-index: 1001;
+  position: absolute;
+  /* left: calc(100% + 5px); */ /* CŨ: Mở sang phải */
+  right: 100%; /* MỚI: Canh lề phải của submenu với lề phải của parent */
+  left: auto; /* MỚI: Bỏ left cũ */
+  top: -1px; /* Điều chỉnh vị trí top cho khớp với viền của parent, có thể cần thay đổi tùy theo border */
+  display: none;
+  background-color: white;
+  min-width: 220px; /* Tăng chiều rộng nếu cần */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  animation: slideLeft 0.2s ease; /* Đổi animation nếu muốn */
+  z-index: 1001;
+  margin-top: 0; /* Reset margin top nếu có */
+  padding: 8px 0; /* Thêm padding cho submenu */
 }
 
-@keyframes slideRight {
-    from {
-        opacity: 0;
-        transform: translateX(-10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+/* Animation mới cho mở sang trái (tùy chọn) */
+@keyframes slideLeft {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-/* FIXED: Nested dropdown hover */
-.user-dropdown-content .dropdown:hover .dropdown-menu,
+/* Đảm bảo hover cho submenu vẫn hoạt động */
+.user-dropdown-content .dropdown:hover > .dropdown-menu, /* Cho mục "Quản lý" */
+.user-dropdown-content .nav-item.dropdown:hover > .dropdown-menu, /* Cho mục "Yêu thích" */
 .user-dropdown-content .dropdown-menu:hover {
-    display: block !important;
+  display: block !important;
 }
 
 .dropdown-divider {
-    height: 1px;
-    background-color: #f0f0f0;
-    margin: 8px 0;
+  height: 1px;
+  background-color: #f0f0f0;
+  margin: 8px 0;
 }
 
 .dropdown-logout {
-    color: #e74c3c;
-    padding: 12px 20px;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: all 0.2s ease;
-    border: none;
-    background: none;
-    width: 100%;
-    text-align: left;
-    cursor: pointer;
+  color: #e74c3c;
+  padding: 12px 20px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
 }
 
-    .dropdown-logout:hover {
-        background-color: #ffebee;
-        color: #c62828;
-        padding-left: 25px;
-    }
+.dropdown-logout:hover {
+  background-color: #ffebee;
+  color: #c62828;
+  padding-left: 25px;
+}
+
+/* Styles for Auth Links (Register/Login) when not signed in */
+.auth-links-container {
+  /* margin-left: auto; */ /* Ensures it aligns to the right if navbar-nav is also present */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-links-container .auth-link-register,
+.auth-links-container .auth-link-login {
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  padding: 0.3rem 0.75rem; /* Adjust padding for btn-sm if needed */
+  font-size: 0.875rem; /* Standard btn-sm font size */
+  text-decoration: none;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.auth-links-container .auth-link-register {
+  /* btn-outline-warning already provides orange border and text */
+  color: #ff9f43;
+  border: 1px solid #ff9f43;
+}
+
+.auth-links-container .auth-link-register:hover {
+  background-color: #ffc107; /* Bootstrap warning color */
+  color: #000; /* Darker text for better contrast on warning bg */
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.auth-links-container .auth-link-login {
+  /* btn-warning and text-white already provide orange bg and white text */
+  background-color: #ff9f43;
+  color: white;
+  border: 1px solid #ff9f43;
+}
+
+.auth-links-container .auth-link-login:hover {
+  background-color: #e0a800; /* Darker shade of warning */
+  border-color: #e0a800;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .user-nav {
-        position: relative;
-    }
+  .user-nav {
+    position: relative;
+  }
 
-    .user-dropdown-content {
-        right: -20px;
-        min-width: 200px;
-    }
+  .user-dropdown-content {
+    right: -20px;
+    min-width: 200px;
+  }
 
-    .user-nav .nav-item {
-        margin-left: 8px;
-    }
+  .user-nav .nav-item {
+    margin-left: 8px;
+  }
 
-    .user-nav .nav-link {
-        padding: 6px 12px;
-        font-size: 14px;
-    }
+  .user-nav .nav-link {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
 
-    .user-dropdown-btn {
-        padding: 6px 12px;
-        font-size: 14px;
-    }
+  .user-dropdown-btn {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
 
-    .user-avatar {
-        width: 28px;
-        height: 28px;
-    }
+  .user-avatar {
+    width: 28px;
+    height: 28px;
+  }
 }
 
 /* Animation cho icons */
 .user-dropdown-content i {
-    transition: transform 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
 .user-dropdown-content a:hover i {
-    transform: scale(1.1);
+  transform: scale(1.1);
 }
 
 /* Hover effect cho chevron icon */
 .user-dropdown-btn i.fa-chevron-down {
-    transition: transform 0.3s ease;
+  transition: transform 0.3s ease;
 }
 
 .user-dropdown:hover .user-dropdown-btn i.fa-chevron-down {
-    transform: rotate(180deg);
+  transform: rotate(180deg);
 }
 
 /* FIXED: Đảm bảo dropdown không bị che */
 .user-dropdown-content * {
-    pointer-events: auto;
+  pointer-events: auto;
 }
 
 /* FIXED: Cải thiện trải nghiệm click */
 .user-dropdown-content a:active,
 .user-dropdown-content .dropdown-item:active {
-    background-color: #ff9f43;
-    color: white;
+  background-color: #ff9f43;
+  color: white;
 }
