@@ -7,7 +7,7 @@
     <title>@ViewData["Title"] - CookShare</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />   
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
 
@@ -20,17 +20,22 @@
                     <span>CookShare</span>
                 </div>
                 <ul class="nav-links">
-                    <li><a href="/" class="active">Trang chủ</a></li>
+                    <li><a href="/">Trang chủ</a></li>
                     <li><a href="/recipes">Công thức</a></li>
                     <li><a href="/blog">Blog</a></li>
                     <li><a asp-controller="Videos" asp-action="Index">Video</a></li>
                     <li><a asp-controller="Home" asp-action="About">Về chúng tôi</a></li>
                 </ul>
                 <div class="nav-actions">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" placeholder="Tìm công thức..." />
-                    </div>
+                    <form class="search-box" asp-controller="Recipes" asp-action="Index" method="get"
+                        id="layoutSearchForm">
+                        <button type="submit" class="search-icon-button" aria-label="Tìm kiếm"
+                            style="background:none; border:none; padding:0; cursor:pointer; color: inherit; display: inline-flex; align-items: center;">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <input class="search-input" type="search" name="searchString" placeholder="Tìm công thức..."
+                            aria-label="Search Field" />
+                    </form>
                     <div class="user-menu">
                         <partial name="_LoginPartial" />
                     </div>
