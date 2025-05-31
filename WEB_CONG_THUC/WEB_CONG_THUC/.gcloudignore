@@ -1,0 +1,9 @@
+.git
+.gitignore
+.gcloudignore
+bin/
+obj/
+node_modules/
+.vscode/
+*.db
+*.suo

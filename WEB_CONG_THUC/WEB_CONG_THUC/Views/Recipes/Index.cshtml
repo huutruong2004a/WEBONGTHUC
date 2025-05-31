@@ -36,9 +36,12 @@
                             <option value="">Tất cả danh mục</option>
                         </select>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <input type="text" name="searchString" id="searchString" class="form-control"
-                            placeholder="Tìm kiếm công thức..." value="@ViewData["CurrentFilter"]" />
+                            placeholder="Tìm theo tên, mô tả, hoặc nguyên liệu..." value="@ViewData["CurrentFilter"]" />
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-info w-100"><i class="fas fa-search"></i> Tìm</button>
                     </div>
                     <div class="col-md-2">
                         <a asp-action="Index" class="btn btn-secondary w-100"><i class="fas fa-undo"></i> Reset</a>
@@ -133,23 +136,25 @@
 @section Scripts {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const categorySelect = document.getElementById('categoryId');
-            const searchInput = document.getElementById('searchString');
             const filterForm = document.getElementById('filterForm');
+            const searchInput = document.getElementById('searchString');
+            const categorySelect = document.getElementById('categoryId');
 
-            function submitFilterForm() {
-                filterForm.submit();
-            }
-
-            if (categorySelect) {
-                categorySelect.addEventListener('change', submitFilterForm);
-            }
-
+            // Gửi form khi nhấn Enter trong ô tìm kiếm
             if (searchInput) {
-                let debounceTimer;
-                searchInput.addEventListener('input', function () {
-                    clearTimeout(debounceTimer);
-                    debounceTimer = setTimeout(submitFilterForm, 500); // Chờ 500ms sau khi người dùng ngừng gõ
+                searchInput.addEventListener('keypress', function (event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault(); // Ngăn hành vi mặc định của Enter (nếu có)
+                        filterForm.submit();
+                    }
+                });
+            }
+
+            // Gửi form khi thay đổi category (nếu bạn vẫn muốn giữ lại hành vi này cho category)
+            // Nếu không muốn, hãy xóa hoặc comment đoạn này
+            if (categorySelect) {
+                categorySelect.addEventListener('change', function () {
+                    filterForm.submit();
                 });
             }
 

@@ -44,9 +44,13 @@ namespace CookShare.Controllers
 
             if (!String.IsNullOrEmpty(searchString))
             {
-                recipesQuery = recipesQuery.Where(r => r.Title.Contains(searchString) ||
-                                                   (r.Description != null && r.Description.Contains(searchString)) ||
-                                                   (r.User != null && r.User.UserName != null && r.User.UserName.Contains(searchString)));
+                string lowerSearchString = searchString.ToLower(); // Chuyển searchString về chữ thường một lần
+                recipesQuery = recipesQuery.Where(r =>
+                    (r.Title != null && r.Title.ToLower().Contains(lowerSearchString)) ||
+                    (r.Description != null && r.Description.ToLower().Contains(lowerSearchString)) ||
+                    (r.Ingredients != null && r.Ingredients.ToLower().Contains(lowerSearchString)) || // Thêm tìm kiếm trong Ingredients
+                    (r.User != null && r.User.UserName != null && r.User.UserName.ToLower().Contains(lowerSearchString))
+                );
             }
 
             if (categoryId.HasValue)
@@ -85,8 +89,8 @@ namespace CookShare.Controllers
             var recipe = await _context.Recipes
                 .Include(r => r.Category)
                 .Include(r => r.User)
-                .Include(r => r.Reviews) 
-                    .ThenInclude(review => review.User) 
+                .Include(r => r.Reviews)
+                    .ThenInclude(review => review.User)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (recipe == null)
@@ -156,7 +160,7 @@ namespace CookShare.Controllers
         [ValidateAntiForgeryToken]
         [Authorize]
         public async Task<IActionResult> Create(RecipeCreateViewModel viewModel) // Sử dụng ViewModel ở đây
-        {            
+        {
             if (ModelState.IsValid)
             {
                 var recipe = new Recipe
