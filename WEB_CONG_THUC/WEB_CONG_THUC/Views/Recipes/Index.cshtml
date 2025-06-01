@@ -1,0 +1,197 @@
+@model IEnumerable<WEB_CONG_THUC.Models.Recipe>
+@using Microsoft.AspNetCore.Identity
+@inject Microsoft.AspNetCore.Identity.SignInManager<IdentityUser> SignInManager
+@inject Microsoft.AspNetCore.Identity.UserManager<IdentityUser> UserManager
+
+@{
+    ViewData["Title"] = "Tất cả Công thức";
+    var categories = ViewData["Categories"] as SelectList;
+}
+
+<section class="all-recipes-section">
+    <div class="container">
+        <div class="section-header">
+            <h1>Tất cả Công thức</h1>
+            <p>Khám phá hàng ngàn công thức nấu ăn từ cộng đồng</p>
+        </div>
+
+        <div class="action-bar mb-4">
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Chia sẻ công thức của bạn
+                </a>
+            }
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary ms-2">
+                <i class="fas fa-home"></i> Về Trang Chủ
+            </a>
+        </div>
+
+        <!-- Filter by Category (Example) -->
+        <div class="filter-bar mb-4">
+            <form asp-action="Index" method="get" id="filterForm">
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <select name="categoryId" id="categoryId" class="form-select" asp-items="categories">
+                            <option value="">Tất cả danh mục</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" name="searchString" id="searchString" class="form-control"
+                            placeholder="Tìm theo tên, mô tả, hoặc nguyên liệu..." value="@ViewData["CurrentFilter"]" />
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-info w-100"><i class="fas fa-search"></i> Tìm</button>
+                    </div>
+                    <div class="col-md-2">
+                        <a asp-action="Index" class="btn btn-secondary w-100"><i class="fas fa-undo"></i> Reset</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <h3>Không tìm thấy công thức nào</h3>
+                <p>Hiện tại chưa có công thức nào phù hợp với tìm kiếm của bạn. Hãy thử lại với từ khóa khác hoặc khám phá
+                    các công thức mới nhất.</p>
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <a asp-action="Create" class="btn btn-primary mt-3">Thêm công thức mới</a>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="recipe-grid">
+                @foreach (var item in Model)
+                {
+                    <div class="recipe-card">
+                        <a asp-action="Details" asp-route-id="@item.Id" class="recipe-link">
+                            <div class="recipe-image">
+                                @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                {
+                                    <img src="@item.ImageUrl" alt="@item.Title" />
+                                }
+                                else
+                                {
+                                    <img src="/images/recipe-placeholder.jpg" alt="@item.Title" />
+                                }
+                                @* Có thể thêm badge nếu cần thiết, ví dụ: Mới, Phổ biến, ... *@
+                            </div>
+                            <div class="recipe-content">
+                                <h3>@item.Title</h3>
+                                <p class="recipe-description-short">@item.Description</p>
+                                <div class="recipe-meta">
+                                    <div class="meta-item">
+                                        <i class="fas fa-clock"></i>
+                                        <span>@(item.PrepTime) phút</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class="fas fa-users"></i>
+                                        <span>@item.Servings người</span>
+                                    </div>
+                                    @if (item.Category != null)
+                                    {
+                                        <div class="meta-item">
+                                            <i class="fas fa-folder"></i>
+                                            <span>@item.Category.Name</span>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="recipe-author-info mt-2">
+                                    @if (item.User != null)
+                                    {
+                                        <small>Đăng bởi: @item.User.UserName</small> <br />
+                                    }
+                                    <small>Ngày đăng: @item.CreatedAt.ToString("dd/MM/yyyy")</small>
+                                </div>
+                            </div>
+                        </a>
+                        @if (SignInManager.IsSignedIn(User) && item.UserId == UserManager.GetUserId(User))
+                        {
+                            <div class="recipe-actions-owner">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary me-1"
+                                    title="Chỉnh sửa">
+                                    <i class="fas fa-edit"></i> Sửa
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger" title="Xóa">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </a>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            @* Thêm phân trang nếu cần *@
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const filterForm = document.getElementById('filterForm');
+            const searchInput = document.getElementById('searchString');
+            const categorySelect = document.getElementById('categoryId');
+
+            // Gửi form khi nhấn Enter trong ô tìm kiếm
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function (event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault(); // Ngăn hành vi mặc định của Enter (nếu có)
+                        filterForm.submit();
+                    }
+                });
+            }
+
+            // Gửi form khi thay đổi category (nếu bạn vẫn muốn giữ lại hành vi này cho category)
+            // Nếu không muốn, hãy xóa hoặc comment đoạn này
+            if (categorySelect) {
+                categorySelect.addEventListener('change', function () {
+                    filterForm.submit();
+                });
+            }
+
+            // Xử lý khi description quá dài
+            const descriptions = document.querySelectorAll('.recipe-description-short');
+            descriptions.forEach(desc => {
+                const maxHeight = 50; // Đặt chiều cao tối đa mong muốn (ví dụ 3 dòng)
+                if (desc.scrollHeight > maxHeight) {
+                    let text = desc.textContent;
+                    desc.innerHTML = ''; // Xóa nội dung cũ để đo lại chính xác hơn
+                    const tempSpan = document.createElement('span');
+                    desc.appendChild(tempSpan);
+                    let currentHeight = 0;
+                    let resultText = '';
+                    const words = text.split(' ');
+
+                    for (let i = 0; i < words.length; i++) {
+                        tempSpan.textContent = resultText + (resultText ? ' ' : '') + words[i] + '...';
+                        currentHeight = tempSpan.scrollHeight;
+                        if (currentHeight > maxHeight) {
+                            if (resultText) { // Nếu resultText đã có từ thì dùng nó, không thì dùng từ đầu tiên
+                                tempSpan.textContent = resultText.trim() + '...';
+                            } else {
+                                tempSpan.textContent = words[0].substring(0, Math.floor(words[0].length * 0.8)) + '...'; // Cố gắng cắt bớt từ đầu tiên nếu nó quá dài
+                            }
+                            break;
+                        }
+                        resultText += (resultText ? ' ' : '') + words[i];
+                        if (i === words.length - 1) { // Nếu là từ cuối cùng và vẫn chưa vượt quá
+                            tempSpan.textContent = resultText;
+                        }
+                    }
+                } else {
+                    // Ensure original text is preserved if not overflowing
+                    // This might not be necessary if you only modify when overflowing
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,45 @@
+﻿@model WEB_CONG_THUC.Models.Blog
+
+@{
+    ViewData["Title"] = "Xem trước - " + Model.Title;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Xem trước bài viết</h4>
+                    <div>
+                        <form asp-action="Approve" asp-route-id="@Model.Id" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check"></i> Duyệt bài
+                            </button>
+                        </form>
+                        <form asp-action="Reject" asp-route-id="@Model.Id" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-times"></i> Từ chối
+                            </button>
+                        </form>
+                        <a asp-action="Manage" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title">@Model.Title</h1>
+                    <div class="text-muted mb-3">
+                        <small>
+                            <i class="far fa-clock"></i> Ngày tạo: @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                        </small>
+                    </div>
+                    <div class="blog-content">
+                        @Html.Raw(Model.Content)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,63 @@
+﻿/* CSS để loại bỏ active state cho Video menu */
+
+/* Loại bỏ active styling cho Video menu */
+.main-nav a[href*="video"],
+.nav-links a[href*="video"] {
+    color: #333 !important;
+    background: none !important;
+}
+
+    .main-nav a[href*="video"]:hover,
+    .nav-links a[href*="video"]:hover {
+        color: #ff9f43 !important;
+    }
+
+    .main-nav a[href*="video"]::after,
+    .nav-links a[href*="video"]::after {
+        width: 0 !important;
+        background: none !important;
+    }
+
+    .main-nav a[href*="video"]:hover::after,
+    .nav-links a[href*="video"]:hover::after {
+        width: 100% !important;
+        background-color: #ff9f43 !important;
+    }
+
+    /* Đảm bảo Video menu không bao giờ có active class */
+    .main-nav a[href*="video"].active,
+    .nav-links a[href*="video"].active {
+        color: #333 !important;
+        background: none !important;
+    }
+
+        .main-nav a[href*="video"].active::after,
+        .nav-links a[href*="video"].active::after {
+            width: 0 !important;
+            background: none !important;
+        }
+
+    /* Nếu bạn muốn hoàn toàn loại bỏ hover effect cho Video */
+    .main-nav a[href*="video"]:hover,
+    .nav-links a[href*="video"]:hover {
+        color: #333 !important;
+        transform: none !important;
+    }
+
+        .main-nav a[href*="video"]:hover::after,
+        .nav-links a[href*="video"]:hover::after {
+            width: 0 !important;
+        }
+
+    /* Alternative: Nếu muốn giữ hover nhưng không có active state */
+    .main-nav a[href*="video"]:hover,
+    .nav-links a[href*="video"]:hover {
+        color: #ff9f43 !important;
+        transform: translateY(-2px) !important;
+    }
+
+        .main-nav a[href*="video"]:hover::after,
+        .nav-links a[href*="video"]:hover::after {
+            width: 100% !important;
+            background-color: #ff9f43 !important;
+        }

@@ -1,0 +1,41 @@
+﻿@page
+@using WEB_CONG_THUC.Models
+@using WEB_CONG_THUC.Areas.Admin.Pages
+@model WEB_CONG_THUC.Areas.Admin.Pages.UserManagementModel
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+}
+
+<div class="container">
+    <h2>Quản lý người dùng</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Vai trò</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model.Users)
+            {
+                <tr>
+                    <td>@user.Email</td>
+                    <td>@user.Role</td>
+                    <td>
+                        <form method="post">
+                            <input type="hidden" name="userId" value="@user.Id" />
+                            @if (user.Role != SD.Role_Admin)
+                            {
+                                <button type="submit" asp-page-handler="MakeAdmin"
+                                        class="btn btn-primary btn-sm">
+                                    Đặt làm Admin
+                                </button>
+                            }
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

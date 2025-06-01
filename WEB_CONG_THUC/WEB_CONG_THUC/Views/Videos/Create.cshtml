@@ -1,0 +1,138 @@
+﻿@model VideoCreateViewModel
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-video"></i> Đăng video mới
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label">Tiêu đề</label>
+                            <input asp-for="Title" class="form-control" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Mô tả</label>
+                            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="CategoryId" class="form-label"></label>
+                            <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.Categories">
+                                <option value="">-- Chọn danh mục --</option>
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label d-block">Chọn phương thức tải lên</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="UploadType" id="urlType" value="Url" checked>
+                                <label class="btn btn-outline-primary" for="urlType">
+                                    <i class="fab fa-youtube"></i> URL YouTube
+                                </label>
+
+                                <input type="radio" class="btn-check" name="UploadType" id="fileType" value="File">
+                                <label class="btn btn-outline-primary" for="fileType">
+                                    <i class="fas fa-file-video"></i> Tải file lên
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="urlUpload" class="upload-section">
+                            <div class="mb-3">
+                                <label asp-for="VideoUrl" class="form-label">URL Video (YouTube)</label>
+                                <input asp-for="VideoUrl" class="form-control" placeholder="Nhập URL video YouTube" />
+                                <span asp-validation-for="VideoUrl" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div id="fileUpload" class="upload-section d-none">
+                            <div class="mb-3">
+                                <label asp-for="VideoFile" class="form-label">File Video</label>
+                                <input asp-for="VideoFile" type="file" class="form-control" accept="video/*" />
+                                <span asp-validation-for="VideoFile" class="text-danger"></span>
+                                <small class="form-text text-muted">
+                                    Định dạng hỗ trợ: MP4, WebM. Kích thước tối đa: 100MB
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ThumbnailFile" class="form-label">Hình thu nhỏ (tùy chọn)</label>
+                            <input asp-for="ThumbnailFile" type="file" class="form-control" accept="image/*" onchange="previewThumbnail(event)" />
+                            <div class="mt-2">
+                                <img id="thumbnailPreview" src="#" alt="Preview" style="max-width: 200px; display: none;" />
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload"></i> Đăng video
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlUpload = document.getElementById('urlUpload');
+            const fileUpload = document.getElementById('fileUpload');
+            const urlType = document.getElementById('urlType');
+            const fileType = document.getElementById('fileType');
+
+            urlType.addEventListener('change', function() {
+                if (this.checked) {
+                    urlUpload.classList.remove('d-none');
+                    fileUpload.classList.add('d-none');
+                }
+            });
+
+            fileType.addEventListener('change', function() {
+                if (this.checked) {
+                    fileUpload.classList.remove('d-none');
+                    urlUpload.classList.add('d-none');
+                }
+            });
+        });
+
+        function previewThumbnail(event) {
+            const preview = document.getElementById('thumbnailPreview');
+            const file = event.target.files[0];
+            if (file) {
+                preview.style.display = 'block';
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+
+    <style>
+        .btn-check:checked + .btn-outline-primary {
+            background-color: var(--bs-primary);
+            color: white;
+        }
+
+        .upload-section {
+            transition: all 0.3s ease;
+        }
+    </style>
+}
